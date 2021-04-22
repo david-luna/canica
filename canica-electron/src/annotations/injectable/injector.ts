@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import 'reflect-metadata';
-import { Type, InjectableParams } from './types';
+import { Type, InjectableParams } from '../types';
 
 interface Dependencies {
   constructorFunction: Function;

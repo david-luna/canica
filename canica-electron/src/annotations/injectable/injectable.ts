@@ -1,5 +1,5 @@
 import { Injector } from './injector';
-import { GenericClassDecorator, InjectableParams, Type } from './types';
+import { GenericClassDecorator, InjectableParams, Type } from '../types';
 
 /**
  * @returns {GenericClassDecorator<Type<unknown>>}
