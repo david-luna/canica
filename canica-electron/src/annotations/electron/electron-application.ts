@@ -3,7 +3,7 @@ import { GenericClassDecorator, Type } from '../types';
 import { COMMANDS_METADATA_KEY, QUERIES_METADATA_KEY, EVENTS_METADATA_KEY } from './command-query-event';
 import { Injector } from '../injectable';
 
-interface EventFromRenderer {
+interface IpcMainEvent {
   // Partial of: https://electronjs.org/docs/api/structures/ipc-main-event
   frameId: number;
   processId: number;
@@ -13,13 +13,13 @@ interface EventFromRenderer {
   };
 }
 
-export interface App {
-  on(event: string, handler: (event: EventFromRenderer, args: unknown[]) => void): void;
+export interface IpcMain extends NodeJS.EventEmitter {
+  // on(event: string, handler: (event: EventFromRenderer, args: unknown[]) => void): void;
+  on(channel: string, listener: (event: IpcMainEvent, ...args: any[]) => void): this;
 }
 
 export interface ElectronParams {
-  // windowFactory: BrowserWindow;
-  app: App;
+  ipcMain: IpcMain;
 }
 
 /**
@@ -31,7 +31,7 @@ const isPromise = (value: any): value is Promise<unknown> => {
 };
 
 // const resolveSubscriptions = (metadataKey: string, target: any, app: App): void => {
-const resolveSubscriptions = (metadataKey: string, type: Type<unknown>, app: App): void => {
+const resolveSubscriptions = (metadataKey: string, type: Type<unknown>, ipcMain: IpcMain): void => {
   const observedTypes = (Reflect.getMetadata(metadataKey, type) || {}) as Record<string, string[]>;
   const instance = Injector.resolve(type) as any;
   const channel = metadataKey.replace('metadata:', '');
@@ -41,7 +41,7 @@ const resolveSubscriptions = (metadataKey: string, type: Type<unknown>, app: App
     const targetMethods = observedTypes[type]
 
     targetMethods.forEach((method) => {
-      app.on(eventName, (evt, args) => {
+      ipcMain.on(eventName, (evt, args) => {
         try {
           const result = instance[method](args[0]);
 
@@ -73,9 +73,9 @@ export const ElectronApplication = (params: ElectronParams): GenericClassDecorat
     const types = (Reflect.getMetadata('design:paramtypes', target) || []) as Type<unknown>[];
 
     types.forEach((type) => {
-      resolveSubscriptions(COMMANDS_METADATA_KEY, type, params.app)
-      resolveSubscriptions(QUERIES_METADATA_KEY, type, params.app)
-      resolveSubscriptions(EVENTS_METADATA_KEY, type, params.app)
+      resolveSubscriptions(COMMANDS_METADATA_KEY, type, params.ipcMain)
+      resolveSubscriptions(QUERIES_METADATA_KEY, type, params.ipcMain)
+      resolveSubscriptions(EVENTS_METADATA_KEY, type, params.ipcMain)
     });
 
     return (): unknown => {
