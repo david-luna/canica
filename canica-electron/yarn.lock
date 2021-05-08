@@ -1093,6 +1093,13 @@ ajv@^7.0.2:
     require-from-string "^2.0.2"
     uri-js "^4.2.2"
 
+annotatron@0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/annotatron/-/annotatron-0.0.5.tgz#33b641102d9ad74265d433bbf91ef38b780724c8"
+  integrity sha512-Lk0bYZ76b/Ba/EsdlpEDuQw9ywaCcCcfrPnJNakgXPC4FPsx3SZhIPfatlM2oAtY32963QbmIaqSD8f+IaPEaw==
+  dependencies:
+    reflect-metadata "^0.1.13"
+
 ansi-colors@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/ansi-colors/-/ansi-colors-4.1.1.tgz#cbb9ae256bf750af1eab344f229aa27fe94ba348"
