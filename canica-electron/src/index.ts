@@ -1,11 +1,17 @@
-import { app, BrowserWindow } from 'electron';
 import * as path from 'path';
+import { app, BrowserWindow, ipcMain } from 'electron';
+import { bootstrapModule, connectWindow } from 'annotatron';
+import { Application } from './application';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
   app.quit();
 }
 
+// Do the bootstrap
+bootstrapModule(Application, ipcMain);
+
+// Renderer windows factory
 const createWindow = (): void => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -18,6 +24,9 @@ const createWindow = (): void => {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
+
+  // connect to the main process
+  connectWindow(mainWindow);
 };
 
 // This method will be called when Electron has finished
