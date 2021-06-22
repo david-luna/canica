@@ -1,0 +1,61 @@
+@startuml
+
+title Marble - School Domain
+
+class Teacher {
+  string id
+  string name
+}
+
+class Student {
+  string id
+  string name
+}
+
+class SchoolYear {
+  int startYear
+  int finishYear
+}
+
+class SchoolClass << Aggregate >>{
+  string id
+  string name
+  number year
+  
+  addStudent(student)
+}
+
+class Subject {
+  string name
+}
+
+class Grade {
+  string name
+  string formula
+}
+
+
+class SchoolClassFactory {
+  createClass(json): SchoolClass
+}
+
+class SchoolClassRepository {
+  byYear(schoolYear): SchoolClass[]
+  
+  saveClass(schoolClass): void
+  deleteClass(schoolClass): void
+}
+
+class SchoolClassFinder << Service >>{
+  getAll(): SchoolClass[]
+}
+
+SchoolClassRepository --> SchoolClass
+
+SchoolClass "1" -- "1" SchoolYear
+SchoolClass "*" -- "1" Teacher
+SchoolClass "*" -- "1" Subject
+SchoolClass "1..*" -- "*..1" Student
+(SchoolClass, Student) .. Grade
+
+@enduml
