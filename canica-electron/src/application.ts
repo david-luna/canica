@@ -1,7 +1,8 @@
 import { ElectronModule } from 'annotatron';
+import { SchoolModule } from './school';
 
 @ElectronModule({
-  imports: [],
+  imports: [SchoolModule],
   providers: [],
 })
 export class Application {
