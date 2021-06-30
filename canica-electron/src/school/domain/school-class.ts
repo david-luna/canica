@@ -27,4 +27,12 @@ export class SchoolClass extends Entity<SchoolClassProps> {
   get year(): SchoolYear {
     return this.props.year;
   }
+
+  get teacher(): Teacher {
+    return this.props.teacher;
+  }
+
+  get students(): Student[] {
+    return this.props.students;
+  }
 }

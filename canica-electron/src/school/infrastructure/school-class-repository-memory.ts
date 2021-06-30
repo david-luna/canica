@@ -1,6 +1,6 @@
 import { Injectable } from 'annotatron';
 import { EntityIdentifier } from '@common/domain';
-import { SchoolClass, SchoolClassRepository, SchoolClassProps } from '../domain';
+import { SchoolClass, SchoolClassRepository, SchoolClassProps, SchoolYear } from '../domain';
 
 @Injectable()
 export class SchoolClassRepositoryMemory extends SchoolClassRepository {
@@ -14,6 +14,10 @@ export class SchoolClassRepositoryMemory extends SchoolClassRepository {
     const filterClass = new SchoolClass({} as SchoolClassProps, id);
     
     return Promise.resolve(this.classes.find((c) => c.equals(filterClass)) || null);
+  }
+
+  findClassesByYear(year: SchoolYear): Promise<SchoolClass[]> {
+    return Promise.resolve(this.classes.filter((c) => c.year.equals(year)));
   }
 
   delete(schoolClass: SchoolClass): Promise<unknown> {
