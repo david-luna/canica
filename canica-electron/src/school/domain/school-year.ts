@@ -1,13 +1,13 @@
-import { Entity } from '@common/domain';
+import { Entity, EntityIdentifier } from '@common/domain';
 
-interface SchoolYearProps {
+export interface SchoolYearProps {
   start: Date;
   end: Date;
 }
 
 export class SchoolYear extends Entity<SchoolYearProps> {
-  constructor (props: SchoolYearProps) {
-    super(props);
+  constructor (props: SchoolYearProps, id?: EntityIdentifier) {
+    super(props, id);
   }
 
   get start(): Date {

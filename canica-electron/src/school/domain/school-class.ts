@@ -1,14 +1,19 @@
-import { Entity } from '@common/domain';
+import { Entity, EntityIdentifier } from '@common/domain';
+import { SchoolYear } from './school-year';
+import { Teacher } from './teacher';
+import { Student } from './student';
 
-interface SchoolClassProps {
+export interface SchoolClassProps {
   age: number;
   label: string;
-  year: number;
+  year: SchoolYear;
+  teacher: Teacher;
+  students: Student[];
 }
 
 export class SchoolClass extends Entity<SchoolClassProps> {
-  constructor (props: SchoolClassProps) {
-    super(props);
+  constructor (props: SchoolClassProps, id?: EntityIdentifier) {
+    super(props, id);
   }
 
   get age(): number {
@@ -19,7 +24,7 @@ export class SchoolClass extends Entity<SchoolClassProps> {
     return this.props.label;
   }
 
-  get year(): number {
+  get year(): SchoolYear {
     return this.props.year;
   }
 }

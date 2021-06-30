@@ -3,7 +3,7 @@ import { shallowEqual } from 'shallow-equal-object';
 /**
  * ValueObjects are objects that we determine their equality through their structural property.
  */
-export abstract class ValueObject<PropsType extends Record<string, unknown>> {
+export abstract class ValueObject<PropsType> {
   public readonly props: PropsType;
 
   constructor (props: PropsType) {
