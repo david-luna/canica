@@ -12,6 +12,7 @@ export interface StudentDataTransfer {
 }
 
 export interface SchoolClassDataTransfer {
+  _id: string;
   age: string;
   label: string;
   year: string;

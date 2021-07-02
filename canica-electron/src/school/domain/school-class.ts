@@ -1,7 +1,8 @@
-import { Entity, EntityIdentifier } from '@common/domain';
+import { EntityIdentifier } from '@common/domain';
 import { SchoolYear } from './school-year';
 import { Teacher } from './teacher';
 import { Student } from './student';
+import { AggregateRoot } from '@common/domain/aggregate-root';
 
 export interface SchoolClassProps {
   age: number;
@@ -11,7 +12,7 @@ export interface SchoolClassProps {
   students: Student[];
 }
 
-export class SchoolClass extends Entity<SchoolClassProps> {
+export class SchoolClass extends AggregateRoot<SchoolClassProps> {
   constructor (props: SchoolClassProps, id?: EntityIdentifier) {
     super(props, id);
   }

@@ -1,10 +1,12 @@
 import { Injectable } from 'annotatron';
 import { EntityIdentifier } from '@common/domain';
 import { SchoolClass, SchoolClassRepository, SchoolClassProps, SchoolYear } from '../domain';
+import { SchoolClassMapper } from '../mappers';
+import { SCHOOL_CLASSES_FIXTURE } from './school-class-repository-memory.fixtures';
 
 @Injectable()
 export class SchoolClassRepositoryMemory extends SchoolClassRepository {
-  private classes: SchoolClass[] = [];
+  private classes: SchoolClass[] = SCHOOL_CLASSES_FIXTURE.map(c => SchoolClassMapper.toDomain(c));
 
   exists(schoolClass: SchoolClass): Promise<boolean> {
     return Promise.resolve(!!this.classes.find(c => c.equals(schoolClass)));
