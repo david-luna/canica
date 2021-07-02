@@ -1,17 +1,17 @@
 import { Student } from "@school/domain";
-import { StudentDataContract } from "./data-contracts";
+import { StudentDataTransfer } from "../data-transfer";
 import { GradeMapper } from "./grade-mapper";
 
 export class StudentMapper {
-  static toDataContract(student: Student): StudentDataContract {
+  static toDataTransfer(student: Student): StudentDataTransfer {
     return {
       code: student.code.toString(),
       name: student.name.toString(),
-      grades: student.grades.map(g => GradeMapper.toDataContract(g)),
+      grades: student.grades.map(g => GradeMapper.toDataTransfer(g)),
     };
   }
 
-  static toDomain(data: StudentDataContract): Student {
+  static toDomain(data: StudentDataTransfer): Student {
     return new Student({
       code: data.code,
       name: data.name,

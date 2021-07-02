@@ -1,8 +1,8 @@
 import { Grade } from "@school/domain/grade";
-import { GradeDataContract } from "./data-contracts";
+import { GradeDataTransfer } from "../data-transfer";
 
 export class GradeMapper {
-  static toDataContract(grade: Grade): GradeDataContract {
+  static toDataTransfer(grade: Grade): GradeDataTransfer {
     return {
       name: grade.name.toString(),
       formula: grade.formula.toString(),
@@ -10,7 +10,7 @@ export class GradeMapper {
     };
   }
 
-  static toDomain(data: GradeDataContract): Grade {
+  static toDomain(data: GradeDataTransfer): Grade {
     return new Grade({
       name: data.name,
       formula: data.formula,
