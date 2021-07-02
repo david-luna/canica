@@ -1,4 +1,4 @@
-import * as path from 'path';
+import { join } from 'path';
 import { app, BrowserWindow, ipcMain } from 'electron';
 import { bootstrapModule, connectWindow } from 'annotatron';
 import { Application } from './application';
@@ -11,16 +11,33 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 // Do the bootstrap
 bootstrapModule(Application, ipcMain);
 
+// Global params
+const isDev = app.isPackaged;
+
 // Renderer windows factory
 const createWindow = (): void => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     height: 600,
     width: 800,
+    webPreferences: {
+      contextIsolation: true,
+      // turn off remote
+      enableRemoteModule: false,
+      // Preload script
+      preload: join(__dirname, '../assets/preload.js'),
+    }
   });
 
-  // and load the index.html of the app.
-  mainWindow.loadFile(path.join(__dirname, '../src/index.html'));
+  if (isDev) {
+    // Open the DevTools.
+    // and load the index.html of the server.
+    mainWindow.loadURL('http://localhost:3000');
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
+  } else {
+    // and load the index.html of the app.
+    mainWindow.loadFile(join(__dirname, '../src/index.html'));
+  }
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();

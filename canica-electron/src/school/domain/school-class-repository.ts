@@ -1,17 +1,26 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from 'annotatron';
-import { Repository } from '@common/domain';
+import { Repository, EntityIdentifier } from '@common/domain';
 import { SchoolClass } from './school-class';
+import { SchoolYear } from './school-year';
+
+const errorMessage = 'SchoolClassRepository abstraction should not be used. Use an implementation instead';
 
 @Injectable()
 export class SchoolClassRepository extends Repository<SchoolClass> {
-  exists(t: SchoolClass): Promise<boolean> {
-    throw new Error('SchoolClassRepository should not be used');
+  findClassById(id: EntityIdentifier): Promise<SchoolClass | null> {
+    throw new Error(errorMessage);
   }
-  delete(t: SchoolClass): Promise<unknown> {
-    throw new Error('SchoolClassRepository should not be used');
+  findClassesByYear(year: SchoolYear): Promise<SchoolClass[]> {
+    throw new Error(errorMessage);
   }
-  save(t: SchoolClass): Promise<unknown> {
-    throw new Error('SchoolClassRepository should not be used');
+  exists(schoolClass: SchoolClass): Promise<boolean> {
+    throw new Error(errorMessage);
+  }
+  delete(schoolClass: SchoolClass): Promise<unknown> {
+    throw new Error(errorMessage);
+  }
+  save(schoolClass: SchoolClass): Promise<unknown> {
+    throw new Error(errorMessage);
   }
 }

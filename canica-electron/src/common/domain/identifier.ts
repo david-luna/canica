@@ -27,3 +27,5 @@ export class Identifier<T> {
     return this.value;
   }
 }
+
+export type EntityIdentifier = Identifier<string | number>;

@@ -1,11 +1,11 @@
-import { Entity } from '@common/domain';
+import { ValueObject } from '@common/domain';
 
-interface SchoolYearProps {
+export interface SchoolYearProps {
   start: Date;
   end: Date;
 }
 
-export class SchoolYear extends Entity<SchoolYearProps> {
+export class SchoolYear extends ValueObject<SchoolYearProps> {
   constructor (props: SchoolYearProps) {
     super(props);
   }

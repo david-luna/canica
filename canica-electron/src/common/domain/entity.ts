@@ -1,8 +1,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
-import { Identifier } from './identifier';
+import { Identifier, EntityIdentifier } from './identifier';
 
-type EntityIdentifier = Identifier<string | number>;
 
 export abstract class Entity<T> {
   protected readonly _id: EntityIdentifier;
