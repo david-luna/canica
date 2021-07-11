@@ -8,5 +8,20 @@
   <body>
     <h1>💖 Hello World!</h1>
     <p>Welcome to your Electron application.</p>
+    <button>click me!</button>
+    <script>
+      const button = document.querySelector('button');
+
+      button.addEventListener('click', function () {
+        canica.dispatchQuery({
+          type: 'list-classes',
+          payload: { year: '2020-2021' },
+        })
+      });
+
+      canica.events$.subscribe((event) => {
+        console.log('event received', event);
+      });
+    </script>
   </body>
 </html>

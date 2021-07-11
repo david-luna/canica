@@ -32,7 +32,8 @@ const createWindow = (): void => {
   if (isDev) {
     // Open the DevTools.
     // and load the index.html of the server.
-    mainWindow.loadURL('http://localhost:3000');
+    // mainWindow.loadURL('http://localhost:3000');
+    mainWindow.loadFile(join(__dirname, '../src/index.html'));
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   } else {
     // and load the index.html of the app.
