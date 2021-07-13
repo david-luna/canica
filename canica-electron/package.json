@@ -6,8 +6,9 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "ttsc -p tsconfig.build.json",
-    "start": "npm run build && concurrently \"npm run watch\" \"electron-forge start\"",
     "watch": "chokidar \"src/**/*.ts\" -c \"npm run build\"",
+    "electron-start": "NODE_ENV=development electron-forge start",
+    "start": "npm run build && concurrently \"npm run watch\" \"npm run electron-start\"",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
