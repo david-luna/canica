@@ -7,7 +7,10 @@ interface ListSchoolClassesQuery {
   year: string;
 }
 
-type ListSchoolClassesResult = SchoolClassDataTransfer[];
+interface ListSchoolClassesResult {
+  type: 'list-classes';
+  classes: SchoolClassDataTransfer[];
+}
 
 
 @Injectable()
@@ -24,7 +27,10 @@ export class ListSchoolClassesUseCase implements UseCase<ListSchoolClassesQuery,
     });
 
     return this.classesRepo.findClassesByYear(schoolYear).then(classes => {
-      return classes.map(sc => SchoolClassMapper.toDataTransfer(sc));
+      return {
+        type: 'list-classes',
+        classes: classes.map(sc => SchoolClassMapper.toDataTransfer(sc)),
+      }
     });
   }
 }
