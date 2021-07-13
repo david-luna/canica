@@ -1,4 +1,3 @@
-
 export interface GradeDataTransfer {
   name: string;
   formula: string;

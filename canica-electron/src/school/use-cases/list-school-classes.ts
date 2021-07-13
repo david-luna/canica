@@ -1,17 +1,8 @@
 import { Injectable, Query } from 'annotatron';
 import { UseCase } from '@common/domain';
-import { SchoolClassDataTransfer, SchoolClassMapper } from '@school/mappers';
-import { SchoolClassRepository, SchoolYear } from '@school/domain';
-
-interface ListSchoolClassesQuery {
-  year: string;
-}
-
-interface ListSchoolClassesResult {
-  type: 'list-classes';
-  classes: SchoolClassDataTransfer[];
-}
-
+import { SchoolClassMapper } from '../mappers';
+import { SchoolClassRepository, SchoolYear } from '../domain';
+import { ListSchoolClassesQuery, ListSchoolClassesResult } from './queries';
 
 @Injectable()
 export class ListSchoolClassesUseCase implements UseCase<ListSchoolClassesQuery, ListSchoolClassesResult> {
