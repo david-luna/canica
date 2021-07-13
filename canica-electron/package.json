@@ -7,8 +7,8 @@
   "scripts": {
     "build": "ttsc -p tsconfig.build.json",
     "watch": "chokidar \"src/**/*.ts\" -c \"npm run build\"",
-    "electron-start": "NODE_ENV=development electron-forge start",
-    "start": "npm run build && concurrently \"npm run watch\" \"npm run electron-start\"",
+    "start-forge": "wait-on http://localhost:3000 && NODE_ENV=development electron-forge start",
+    "start": "npm run build && concurrently \"npm run watch\" \"npm run start-forge\"",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
