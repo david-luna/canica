@@ -1,5 +1,5 @@
 import { Injectable } from 'annotatron';
-import { EntityIdentifier } from '@common/domain';
+import { EntityIdentifier, DomainEventsBus } from '@common/domain';
 import { SchoolClass, SchoolClassRepository, SchoolClassProps, SchoolYear } from '../domain';
 import { SchoolClassMapper } from '../mappers';
 import { SCHOOL_CLASSES_FIXTURE } from './school-class-repository-memory.fixtures';
@@ -7,6 +7,10 @@ import { SCHOOL_CLASSES_FIXTURE } from './school-class-repository-memory.fixture
 @Injectable()
 export class SchoolClassRepositoryMemory extends SchoolClassRepository {
   private classes: SchoolClass[] = SCHOOL_CLASSES_FIXTURE.map(c => SchoolClassMapper.toDomain(c));
+
+  constructor (private eventsBus: DomainEventsBus) {
+    super();
+  }
 
   exists(schoolClass: SchoolClass): Promise<boolean> {
     return Promise.resolve(!!this.classes.find(c => c.equals(schoolClass)));
@@ -37,6 +41,8 @@ export class SchoolClassRepositoryMemory extends SchoolClassRepository {
     } else {
       this.classes.push(schoolClass);
     }
+
+    this.eventsBus.dispatchEvents(schoolClass);
     return Promise.resolve();
   }  
 }

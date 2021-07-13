@@ -2,9 +2,10 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld(
-  'backend',
+  'canica',
   {
-    dispatch: (command) => ipcRenderer.send(`annotatron:commands:${command.type}`, [command]),
+    dispatchCommand: (command) => ipcRenderer.send(`annotatron:commands:${command.type}`, [command]),
+    dispatchQuery: (query) => ipcRenderer.send(`annotatron:queries:${query.type}`, [query]),
     events$: {
       subscribe: (observer) => {
         const ipcHandler = (evt, payload) => observer(payload);

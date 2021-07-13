@@ -8,11 +8,17 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
   app.quit();
 }
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require('electron-reload')(__dirname, {
+  electron: join(__dirname,'..' ,'node_modules', '.bin', 'electron')
+});
+
 // Do the bootstrap
 bootstrapModule(Application, ipcMain);
 
 // Global params
-const isDev = app.isPackaged;
+const environment = process.env.NODE_ENV
+const isDev = environment === 'development';
 
 // Renderer windows factory
 const createWindow = (): void => {
@@ -33,7 +39,7 @@ const createWindow = (): void => {
     // Open the DevTools.
     // and load the index.html of the server.
     mainWindow.loadURL('http://localhost:3000');
-    mainWindow.webContents.openDevTools({ mode: 'detach' });
+    mainWindow.webContents.openDevTools();
   } else {
     // and load the index.html of the app.
     mainWindow.loadFile(join(__dirname, '../src/index.html'));
