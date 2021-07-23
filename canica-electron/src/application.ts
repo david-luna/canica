@@ -1,11 +1,13 @@
 import { ElectronModule } from 'annotatron';
 import { CommonModule } from './common';
+import { AuthModule } from './auth';
 import { SchoolModule } from './school';
 
 @ElectronModule({
   imports: [
     CommonModule,
-    SchoolModule
+    AuthModule,
+    SchoolModule,
   ],
   providers: [],
 })
