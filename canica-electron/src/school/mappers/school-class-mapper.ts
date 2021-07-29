@@ -8,7 +8,6 @@ export class SchoolClassMapper {
   static toDataTransfer(schoolClass: SchoolClass): SchoolClassDataTransfer {
     return {
       _id: schoolClass.id.toString(),
-      age: schoolClass.age.toString(),
       label: schoolClass.label.toString(),
       teacher: { name: schoolClass.teacher.props.name.toString() },
       year: `${schoolClass.props.year.start.getFullYear()}-${schoolClass.props.year.end.getFullYear()}`,
@@ -19,7 +18,6 @@ export class SchoolClassMapper {
   static toDomain(schoolClass: SchoolClassDataTransfer): SchoolClass {
     return new SchoolClass(
       {
-        age: Number(schoolClass.age),
         label: schoolClass.label,
         teacher: new Teacher(schoolClass.teacher),
         year: new SchoolYear({

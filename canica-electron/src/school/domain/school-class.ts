@@ -5,7 +5,6 @@ import { Student } from './student';
 import { AggregateRoot } from '@common/domain/aggregate-root';
 
 export interface SchoolClassProps {
-  age: number;
   label: string;
   year: SchoolYear;
   teacher: Teacher;
@@ -15,10 +14,6 @@ export interface SchoolClassProps {
 export class SchoolClass extends AggregateRoot<SchoolClassProps> {
   constructor (props: SchoolClassProps, id?: EntityIdentifier) {
     super(props, id);
-  }
-
-  get age(): number {
-    return this.props.age;
   }
 
   get label(): string {

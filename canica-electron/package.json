@@ -74,10 +74,12 @@
     "wait-on": "^6.0.0"
   },
   "dependencies": {
+    "@googleapis/drive": "^0.3.1",
     "annotatron": "0.0.9",
     "electron-fetch": "^1.7.3",
     "electron-reload": "^1.5.0",
     "electron-squirrel-startup": "^1.0.0",
+    "google-auth-library": "^7.3.0",
     "qs": "^6.5.2",
     "shallow-equal-object": "^1.1.1",
     "ts-node": "^10.0.0",

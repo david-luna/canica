@@ -2,7 +2,6 @@ import { Entity } from '@common/domain';
 
 export interface EmailProps {
   address: string;
-  domain: string;
 }
 
 export class Email extends Entity<EmailProps> {
@@ -12,9 +11,5 @@ export class Email extends Entity<EmailProps> {
 
   get address(): string {
     return this.props.address;
-  }
-
-  get domain(): string {
-    return this.props.domain;
   }
 }

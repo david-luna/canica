@@ -5,19 +5,16 @@ export class UserMapper {
   static toDataTransfer(user: User): UserDataTransfer {
     return {
       name: user.name.toString(),
-      birth: user.birth.toString(),
-      email: {
-        address: user.email.address,
-        domain: user.email.domain,
-      }
+      email: { address: user.email.address },
+      picture: user.picture.toString(),
     };
   }
 
   static toDomain(data: UserDataTransfer): User {
     return new User({
       name: data.name,
-      birth: new Date(data.birth),
       email: new Email(data.email),
+      picture: data.picture,
     });
   }
 }
