@@ -16,6 +16,12 @@ interface FetchTokenResponse {
 
 interface GoogleProfile {
   name: string;
+  given_name: string;
+  family_name: string;
+  email:string;
+  verified_email: boolean,
+  picture: string;
+  locale: string;
 }
 
 const GOOGLE_AUTHORIZATION_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
@@ -42,7 +48,7 @@ export class GoogleAuthService {
     return this.getAuthorizationCode()
       .then(code => this.fetchAccessToken(code))
       .then(tokenData => {
-        emitEvent({ msg: `token ${tokenData.access_token}` });
+        emitEvent({ type: 'google_authorized', data: tokenData });
         session.defaultSession.cookies.set({
           url: 'https://canica.com',
           name: 'token',
@@ -50,7 +56,6 @@ export class GoogleAuthService {
         });
         return this.fetchUserProfile(tokenData.access_token);
       }).then((profile) => {
-        emitEvent({ msg: `profile ${JSON.stringify(profile)}` });
         session.defaultSession.cookies.set({
           url: 'https://canica.com',
           name: 'profile',
@@ -68,8 +73,6 @@ export class GoogleAuthService {
 
     return new Promise((resolve, reject) => {
       authWindow.on('closed', () => {
-        // TODO: Handle this smoothly
-        // throw new Error('Auth window was closed by user')
         reject(new Error('Auth window was closed by user'));
       })
 
@@ -80,7 +83,6 @@ export class GoogleAuthService {
       authWindow.webContents.on('will-redirect', (event, url) => {
         this.handleNavigation(authWindow, url, resolve, reject);
       });
-      emitEvent({ msg: `opening auth URL ${authUrl}` });
       authWindow.loadURL(authUrl);
     });
   }
@@ -102,7 +104,6 @@ export class GoogleAuthService {
         // Login is complete
         authWindow.removeAllListeners('closed')
         setImmediate(() => authWindow.close());
-        emitEvent({ msg: `got auth code ${query.code}` });
         // This is the authorization code we need to request tokens
         resolve(query.code);
       }
@@ -115,7 +116,6 @@ export class GoogleAuthService {
    * @param code authorization code given in the OAuth redirect
    */
   private fetchAccessToken(code: string): Promise<FetchTokenResponse> {
-    emitEvent({ msg: `fetch token ${GOOGLE_TOKEN_URL}` });
     return fetch(GOOGLE_TOKEN_URL, {
       method: 'POST',
       body: stringify({
@@ -131,7 +131,6 @@ export class GoogleAuthService {
     })
     .then((netResponse) => netResponse.json<FetchTokenResponse>())
     .then((tokenResponse: FetchTokenResponse) => {
-      emitEvent({ msg: `fetch token response ${JSON.stringify(tokenResponse)}` });
       if (tokenResponse.error) {
         throw new Error(tokenResponse.error_description);
       }
@@ -145,7 +144,6 @@ export class GoogleAuthService {
    * @param accessToken token to authenticate to the server
    */
   private fetchUserProfile(accessToken: string): Promise<GoogleProfile> {
-    emitEvent({ msg: `fetch profile ${GOOGLE_PROFILE_URL}` });
     return fetch(GOOGLE_PROFILE_URL, {
       method: 'GET',
       headers: {
