@@ -27,6 +27,7 @@ function AuthRequired(target: any, propertyKey: string, descriptor: PropertyDesc
 @Injectable()
 export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
   private googleDrive: drive_v3.Drive;
+  private googleFolderId: string;
 
   constructor (private eventsBus: DomainEventsBus) {
     super();
@@ -118,11 +119,35 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
    * @param token the auth token
    */
   @Event('google_authorized')
-  private updateToken(token: GoogleToken): void {
+  private async updateToken(token: GoogleToken): Promise<void> {
     console.log('received authorization!!!');
+    const folderMimeType = 'application/vnd.google-apps.folder'
     const authClient = new OAuth2Client();
 
+    // Setup auth client
     authClient.setCredentials(token);
     this.googleDrive = drive({ version: 'v3', auth: authClient });
+
+    // Setup containing folder
+    const list = await this.googleDrive.files.list({
+      corpora: 'user',
+      spaces : 'drive',
+      fields : 'files/id, files/name',
+      q      : `name = 'canica' and mimeType = '${folderMimeType}'`,
+    });
+
+    if (list.data.files.length > 0) {
+      this.googleFolderId = list.data.files[0].id;
+      console.log('folder id CREATED is', this.googleFolderId);
+      return;
+    }
+
+    const result = await this.googleDrive.files.create({
+      requestBody: { name: 'canica', mimeType: folderMimeType },
+    });
+
+    this.googleFolderId = result.data.id;
+
+    console.log('folder id FETCHED is', this.googleFolderId);
   }
 }
