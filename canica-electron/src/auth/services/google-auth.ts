@@ -48,7 +48,7 @@ export class GoogleAuthService {
     return this.getAuthorizationCode()
       .then(code => this.fetchAccessToken(code))
       .then(tokenData => {
-        emitEvent({ type: 'google_authorized', data: tokenData });
+        emitEvent({ type: 'google_authorized', payload: tokenData });
         session.defaultSession.cookies.set({
           url: 'https://canica.com',
           name: 'token',

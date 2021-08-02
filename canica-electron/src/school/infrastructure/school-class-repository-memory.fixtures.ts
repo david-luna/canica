@@ -8,7 +8,6 @@ export const SCHOOL_CLASSES_FIXTURE: SchoolClassDataTransfer[] = [
     },
     year: "2020-2021",
     label: "2n B",
-    age: "7",
     students: [
       {
         code: "11111111X",

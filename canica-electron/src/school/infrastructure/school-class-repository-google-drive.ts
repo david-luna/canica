@@ -2,11 +2,15 @@ import { Injectable, Event } from 'annotatron';
 import { OAuth2Client } from 'google-auth-library';
 import { drive, drive_v3 } from '@googleapis/drive';
 import { EntityIdentifier, DomainEventsBus, Identifier } from '@common/domain';
-import { SchoolClass, SchoolClassRepository, SchoolYear, Teacher, SchoolClassProps } from '../domain';
-import { SchoolClassMapper } from '../mappers';
+import { SchoolClass, SchoolClassRepository, SchoolYear, Teacher } from '../domain';
 
 interface GoogleToken {
   access_token: string;
+}
+
+interface FileDetails {
+  id: string;
+  name: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,66 +27,90 @@ function AuthRequired(target: any, propertyKey: string, descriptor: PropertyDesc
 @Injectable()
 export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
   private googleDrive: drive_v3.Drive;
-  private classes: SchoolClass[];
 
   constructor (private eventsBus: DomainEventsBus) {
     super();
-    this.classes = [];
   }
 
   @AuthRequired
   async exists(schoolClass: SchoolClass): Promise<boolean> {
-    await this.driveSync();
+    const result = await this.googleDrive.files.list({
+      corpora: 'user',
+      spaces : 'drive',
+      fields : 'files/id, files/name',
+      q      : `name contains 'canica'`,
+    });
 
-    const isCached = !!this.classes.find(c => c.equals(schoolClass));
-
-    return Promise.resolve(isCached);
+    return result.data.files.some(file => file.id === schoolClass.id.toString());
   }
 
   @AuthRequired
   async findClassById(id: EntityIdentifier): Promise<SchoolClass | null> {
-    await this.driveSync();
+    const result = await this.googleDrive.files.get({
+      fileId: id.toString(),
+      fields: 'id, name',
+    });
 
-    const filterClass = new SchoolClass({} as SchoolClassProps, id);
-    
-    return Promise.resolve(this.classes.find((c) => c.equals(filterClass)) || null);
+    return await this.fromDetails(result.data as FileDetails)
   }
 
   @AuthRequired
   async findClassesByYear(year: SchoolYear): Promise<SchoolClass[]> {
-    await this.driveSync();
-    return Promise.resolve(this.classes.filter((c) => c.year.equals(year)));
+    const result = await this.googleDrive.files.list({
+      corpora: 'user',
+      spaces : 'drive',
+      fields : 'files/id, files/name',
+      q      : `name contains 'canica'`,
+    });
+
+    const filtered = result.data.files.filter(({ name }) => {
+      const yearString = [
+        year.start.getFullYear().toString(),
+        year.end.getFullYear().toString()
+      ].join('__');
+
+      return name.indexOf(yearString) !== -1
+    });
+
+    return Promise.all(filtered.map(file => this.fromDetails(file as FileDetails)))
   }
 
   @AuthRequired
   async delete(schoolClass: SchoolClass): Promise<unknown> {
-    const index = this.classes.findIndex(c => c.equals(schoolClass));
-
-    // Remove form drive
     await this.googleDrive.files.delete({ fileId: schoolClass.id.toString() })
 
-    // Remove from memory
-    this.classes.splice(index, 1);
-    
     return Promise.resolve();
   }
 
   @AuthRequired
   async save(schoolClass: SchoolClass): Promise<unknown> {
-    const index = this.classes.findIndex(c => c.equals(schoolClass));
+    // TODO: update via google drive API (create the file or update)
 
-    // TODO: update via google drive API (create the file)
-    
-    if (index !== -1) {
-      this.classes.splice(index, 1, schoolClass);
-    } else {
-      this.classes.push(schoolClass);
-    }
 
     this.eventsBus.dispatchEvents(schoolClass);
     return Promise.resolve();
   }
 
+  /**
+   * Returns a school class object form the file details
+   *
+   * @param file the drive file details (id, name, ...)
+   */
+  private async fromDetails(file: FileDetails): Promise<SchoolClass> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [ app, label, startYear, endYear, teacherName ] = file.name.split('__');
+
+    return Promise.resolve(new SchoolClass({
+      label: label,
+      teacher: new Teacher({ name: teacherName }),
+      year: new SchoolYear({
+        start: new Date(`09/01/${startYear}`),
+        end: new Date(`06/21/${endYear}`),
+      }),
+      // TODO: add students
+      students: [],
+    }, new Identifier(file.id) ))
+  }
 
   /**
    * Configures the drive API for data manipulation
@@ -96,34 +124,5 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
 
     authClient.setCredentials(token);
     this.googleDrive = drive({ version: 'v3', auth: authClient });
-  }
-
-  /**
-   * Gets the classes info from the drive API and puts them into memory
-   */
-  private async driveSync(): Promise<void> {
-    if (this.classes.length !== 0) return;
-
-    const result = await this.googleDrive.files.list({
-      corpora: 'user',
-      spaces: 'drive',
-      q: `name contains 'canica'`,
-    });
-
-    result.data.files.forEach(file => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [ app, label, startYear, endYear, teacherName ] = file.name.split('__');
-
-      this.classes.push(new SchoolClass({
-        label: label,
-        teacher: new Teacher({ name: teacherName }),
-        year: new SchoolYear({
-          start: new Date(`09/01/${startYear}`),
-          end: new Date(`06/21/${endYear}`),
-        }),
-        // TODO: add students
-        students: [],
-      }, new Identifier(file.id) ))
-    });
   }
 }
