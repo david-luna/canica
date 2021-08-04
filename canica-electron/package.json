@@ -75,6 +75,7 @@
   },
   "dependencies": {
     "@googleapis/drive": "^0.3.1",
+    "@googleapis/sheets": "^0.3.0",
     "annotatron": "^0.0.10",
     "electron-fetch": "^1.7.3",
     "electron-reload": "^1.5.0",

@@ -1,6 +1,8 @@
 import { Injectable, Event } from 'annotatron';
 import { OAuth2Client } from 'google-auth-library';
 import { drive, drive_v3 } from '@googleapis/drive';
+import { sheets, sheets_v4 } from '@googleapis/sheets';
+
 import { EntityIdentifier, DomainEventsBus, Identifier } from '@common/domain';
 import { SchoolClass, SchoolClassRepository, SchoolYear, Teacher } from '../domain';
 
@@ -12,6 +14,8 @@ interface FileDetails {
   id: string;
   name: string;
 }
+
+const FILE_MIME_TYPE = 'application/vnd.google-apps.spreadsheet'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function AuthRequired(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -27,6 +31,7 @@ function AuthRequired(target: any, propertyKey: string, descriptor: PropertyDesc
 @Injectable()
 export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
   private googleDrive: drive_v3.Drive;
+  private googleSheets: sheets_v4.Sheets;
   private googleFolderId: string;
 
   constructor (private eventsBus: DomainEventsBus) {
@@ -39,7 +44,11 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
       corpora: 'user',
       spaces : 'drive',
       fields : 'files/id, files/name',
-      q      : `name contains 'canica'`,
+      q      : [
+        `name contains '${schoolClass.id}'`,
+        `mimeType = '${FILE_MIME_TYPE}'`,
+        `'${this.googleFolderId}' in parents`,
+      ].join(' and '),
     });
 
     return result.data.files.some(file => file.id === schoolClass.id.toString());
@@ -47,45 +56,132 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
 
   @AuthRequired
   async findClassById(id: EntityIdentifier): Promise<SchoolClass | null> {
-    const result = await this.googleDrive.files.get({
-      fileId: id.toString(),
-      fields: 'id, name',
+    const result = await this.googleDrive.files.list({
+      corpora: 'user',
+      spaces : 'drive',
+      fields: 'files/id, files/name',
+      q      : [
+        `name contains '${id}'`,
+        `mimeType = '${FILE_MIME_TYPE}'`,
+        `'${this.googleFolderId}' in parents`,
+      ].join(' and '),
     });
 
-    return await this.fromDetails(result.data as FileDetails)
+    if (result.data.files.length === 0) {
+      return null;
+    }
+
+    return this.fromDetails(result.data.files[0] as FileDetails)
   }
 
   @AuthRequired
   async findClassesByYear(year: SchoolYear): Promise<SchoolClass[]> {
+    const fileMimeType = 'application/vnd.google-apps.spreadsheet'
     const result = await this.googleDrive.files.list({
       corpora: 'user',
       spaces : 'drive',
       fields : 'files/id, files/name',
-      q      : `name contains 'canica'`,
+      q      : [
+        `name contains '${year.start.getFullYear()}__${year.end.getFullYear()}'`,
+        `mimeType = '${fileMimeType}'`,
+        `'${this.googleFolderId}' in parents`,
+      ].join(' and '),
     });
 
-    const filtered = result.data.files.filter(({ name }) => {
-      const yearString = [
-        year.start.getFullYear().toString(),
-        year.end.getFullYear().toString()
-      ].join('__');
-
-      return name.indexOf(yearString) !== -1
-    });
-
-    return Promise.all(filtered.map(file => this.fromDetails(file as FileDetails)))
+    return result.data.files.map(file => this.fromDetails(file as FileDetails));
   }
 
   @AuthRequired
   async delete(schoolClass: SchoolClass): Promise<unknown> {
-    await this.googleDrive.files.delete({ fileId: schoolClass.id.toString() })
+    const result = await this.googleDrive.files.list({
+      corpora: 'user',
+      spaces : 'drive',
+      fields: 'files/id, files/name',
+      q      : [
+        `name contains '${schoolClass.id}'`,
+        `mimeType = '${FILE_MIME_TYPE}'`,
+        `'${this.googleFolderId}' in parents`,
+      ].join(' and '),
+    });
 
-    return Promise.resolve();
+    if (result.data.files.length === 0) {
+      return;
+    }
+
+    const fileId = result.data.files[0].id;
+
+    await this.googleDrive.files.delete({ fileId });
   }
 
   @AuthRequired
   async save(schoolClass: SchoolClass): Promise<unknown> {
+    const fileMimeType = 'application/vnd.google-apps.spreadsheet'
     // TODO: update via google drive API (create the file or update)
+    // Check if already exists
+    const list = await this.googleDrive.files.list({
+      corpora: 'user',
+      spaces : 'drive',
+      fields : 'files/id, files/name',
+      q      : [
+        `name contains '${schoolClass.label}'`,
+        `mimeType = '${fileMimeType}'`,
+        `'${this.googleFolderId}' in parents`,
+      ].join(''),
+    });
+
+    if (list.data.files.length > 0) {
+      // TODO: update the file!?!?!?
+      this.googleFolderId = list.data.files[0].id;
+      return;
+    }
+
+    // Create the file
+    const result = await this.googleDrive.files.create({
+      requestBody: {
+        name: [
+          `${schoolClass.label}`,
+          `${schoolClass.year.start.getFullYear()}`,
+          `${schoolClass.year.end.getFullYear()}`,
+          `${schoolClass.teacher.name}`,
+        ].join('__'),
+        mimeType: fileMimeType,
+        parents: [this.googleFolderId],
+        description: `Grades of the class ${schoolClass.label} with teacher ${schoolClass.teacher.name}`,
+      },
+    });
+
+    // With the file ID use the spreadsheet API to add content
+    const spreadsheetId = result.data.id;
+    await this.googleSheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [
+          {
+            updateSheetProperties: {
+              properties: {
+                gridProperties: {
+                  rowCount: schoolClass.students.length,
+                  columnCount: 1,
+                }
+              },
+              fields: 'gridProperties(rowCount,columnCount)'
+            }
+          },
+          {
+            appendCells: {
+              fields: '*',
+              rows: [
+                { values: [{ effectiveValue: { stringValue: 'Student Name' } }] },
+                { values: [{ effectiveValue: { stringValue: 'StudentA' } }] },
+                { values: [{ effectiveValue: { stringValue: 'StudentB' } }] },
+                { values: [{ effectiveValue: { stringValue: 'StudentC' } }] },
+              ]
+            }
+          }
+        ],
+      }
+    });
+
 
 
     this.eventsBus.dispatchEvents(schoolClass);
@@ -94,23 +190,27 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
 
   /**
    * Returns a school class object form the file details
+   * TODO: make it async to read cells of the file
    *
    * @param file the drive file details (id, name, ...)
    */
-  private async fromDetails(file: FileDetails): Promise<SchoolClass> {
+  private fromDetails(file: FileDetails): SchoolClass {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [ app, label, startYear, endYear, teacherName ] = file.name.split('__');
+    const [ label, startYear, endYear, teacherName, id ] = file.name.split('__');
 
-    return Promise.resolve(new SchoolClass({
-      label: label,
-      teacher: new Teacher({ name: teacherName }),
-      year: new SchoolYear({
-        start: new Date(`09/01/${startYear}`),
-        end: new Date(`06/21/${endYear}`),
-      }),
-      // TODO: add students
-      students: [],
-    }, new Identifier(file.id) ))
+    return new SchoolClass(
+      {
+        label: label,
+        teacher: new Teacher({ name: teacherName }),
+        year: new SchoolYear({
+          start: new Date(`09/01/${startYear}`),
+          end: new Date(`06/21/${endYear}`),
+        }),
+        // TODO: add students
+        students: [],
+      },
+      new Identifier(id)
+    );
   }
 
   /**
@@ -119,16 +219,16 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
    * @param token the auth token
    */
   @Event('google_authorized')
-  private async updateToken(token: GoogleToken): Promise<void> {
-    console.log('received authorization!!!');
+  private async prepareStorage(token: GoogleToken): Promise<void> {
     const folderMimeType = 'application/vnd.google-apps.folder'
     const authClient = new OAuth2Client();
 
     // Setup auth client
     authClient.setCredentials(token);
     this.googleDrive = drive({ version: 'v3', auth: authClient });
+    this.googleSheets = sheets({ version: 'v4', auth: authClient });
 
-    // Setup containing folder
+    // List containing folder
     const list = await this.googleDrive.files.list({
       corpora: 'user',
       spaces : 'drive',
@@ -138,16 +238,14 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
 
     if (list.data.files.length > 0) {
       this.googleFolderId = list.data.files[0].id;
-      console.log('folder id CREATED is', this.googleFolderId);
       return;
     }
 
+    // If not listed create it
     const result = await this.googleDrive.files.create({
       requestBody: { name: 'canica', mimeType: folderMimeType },
     });
 
     this.googleFolderId = result.data.id;
-
-    console.log('folder id FETCHED is', this.googleFolderId);
   }
 }
