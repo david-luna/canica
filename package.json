@@ -1,0 +1,13 @@
+{
+  "name": "canica",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "npx concurrently \"npm run start-ui\" \"npm run start-electron\"",
+    "start-ui": "cd canica-ui && npm start",
+    "start-electron": "cd canica-electron && npm start"
+  },
+  "devDependencies": {
+    "concurrently": "^6.2.0"
+  }
+}

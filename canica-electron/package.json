@@ -8,7 +8,8 @@
     "build": "ttsc -p tsconfig.build.json",
     "watch": "chokidar \"src/**/*.ts\" -c \"npm run build\"",
     "start-forge": "wait-on http://localhost:3000 && NODE_ENV=development electron-forge start",
-    "start": "npm run build && concurrently \"npm run watch\" \"npm run start-forge\"",
+    "start-no-ui": "source .env && npm run build && concurrently \"npm run watch\" \"electron-forge start\"",
+    "start": "source .env && npm run build && concurrently \"npm run watch\" \"npm run start-forge\"",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
@@ -55,6 +56,7 @@
     "@electron-forge/maker-zip": "^6.0.0-beta.54",
     "@types/jest": "^26.0.22",
     "@types/node": "^14.14.41",
+    "@types/qs": "^6.9.7",
     "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^4.28.0",
     "@typescript-eslint/parser": "^4.28.0",
@@ -72,9 +74,14 @@
     "wait-on": "^6.0.0"
   },
   "dependencies": {
-    "annotatron": "0.0.9",
+    "@googleapis/drive": "^0.3.1",
+    "@googleapis/sheets": "^0.3.0",
+    "annotatron": "^0.0.10",
+    "electron-fetch": "^1.7.3",
     "electron-reload": "^1.5.0",
     "electron-squirrel-startup": "^1.0.0",
+    "google-auth-library": "^7.3.0",
+    "qs": "^6.5.2",
     "shallow-equal-object": "^1.1.1",
     "ts-node": "^10.0.0",
     "uuid": "^8.3.2"

@@ -1,6 +1,5 @@
 import { SchoolClassDataTransfer } from '../data-transfer';
 
-
 export interface ListSchoolClassesQuery {
   year: string;
 }
