@@ -8,4 +8,8 @@ export class Teacher extends Entity<TeacherProps> {
   constructor (props: TeacherProps, id?: EntityIdentifier) {
     super(props, id);
   }
+
+  get name(): string {
+    return this.props.name;
+  }
 }
