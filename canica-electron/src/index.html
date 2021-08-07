@@ -8,21 +8,30 @@
   <body>
     <h1>💖 Hello World!</h1>
     <p>Welcome to your Electron application.</p>
-    <button>click me!</button>
+    <button id="login-button">Login!</button>
+    <button id="import-button">Import!</button>
     <script>
-      const button = document.querySelector('button');
+      const loginButton = document.querySelector('#login-button');
+      const importButton = document.querySelector('#import-button');
 
-      button.addEventListener('click', function () {
-        /*
-        canica.dispatchQuery({
-          type: 'list-classes',
-          payload: { year: '2020-2021' },
-        })*/
+      loginButton.addEventListener('click', function () {
         canica.dispatchCommand({
           type: 'login',
           payload: { vendor: 'google' },
         })
       });
+
+      importButton.addEventListener('click', function () {
+        canica.dispatchCommand({
+          type: 'import-data',
+        })
+      });
+
+      /*
+      canica.dispatchQuery({
+        type: 'list-classes',
+        payload: { year: '2020-2021' },
+      })*/
 
       canica.events$.subscribe((event) => {
         console.log('event received', event);
