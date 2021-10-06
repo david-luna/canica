@@ -15,6 +15,7 @@ interface FileDetails {
   name: string;
 }
 
+// TODO: maybe a utility class
 const FILE_MIME_TYPE = 'application/vnd.google-apps.spreadsheet'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
