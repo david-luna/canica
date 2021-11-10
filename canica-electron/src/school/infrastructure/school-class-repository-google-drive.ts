@@ -60,7 +60,7 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
     const result = await this.googleDrive.files.list({
       corpora: 'user',
       spaces : 'drive',
-      fields: 'files/id, files/name',
+      fields : 'files/id, files/name',
       q      : [
         `name contains '${id}'`,
         `mimeType = '${FILE_MIME_TYPE}'`,
@@ -182,8 +182,6 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
         ],
       }
     });
-
-
 
     this.eventsBus.dispatchEvents(schoolClass);
     return Promise.resolve();
