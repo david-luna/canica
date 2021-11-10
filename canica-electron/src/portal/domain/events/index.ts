@@ -1,1 +1,1 @@
-export *  from './school-class-record-imported';
+export *  from './school-class-record-created';

@@ -1,4 +1,4 @@
-import { EntityIdentifier, Entity } from '@common/domain';
+import { ValueObject } from '@common/domain';
 
 export interface StudentRecordProps {
   code: string;
@@ -6,9 +6,9 @@ export interface StudentRecordProps {
   grade: string;
 }
 
-export class StudentRecord extends Entity<StudentRecordProps> {
-  constructor (props: StudentRecordProps, id?: EntityIdentifier) {
-    super(props, id);
+export class StudentRecord extends ValueObject<StudentRecordProps> {
+  constructor (props: StudentRecordProps) {
+    super(props);
   }
 
   get code(): string {

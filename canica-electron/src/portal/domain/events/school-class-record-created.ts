@@ -3,7 +3,7 @@ import { SchoolClassRecord } from '../school-class-record';
 import { SchoolClassRecordDataTransfer } from '../../data-transfer'
 import { SchoolClassRecordMapper } from '../../mappers/school-class-record-mapper';
 
-export class SchoolClassRecordImported implements DomainEvent<SchoolClassRecordDataTransfer> {
+export class SchoolClassRecordCreated implements DomainEvent<SchoolClassRecordDataTransfer> {
   timestamp: Date;
   payload: SchoolClassRecordDataTransfer;
 

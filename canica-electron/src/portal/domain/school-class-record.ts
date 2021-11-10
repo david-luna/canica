@@ -1,4 +1,5 @@
 import { EntityIdentifier, AggregateRoot } from '@common/domain';
+import { SchoolClassRecordCreated } from '.';
 import { StudentRecord } from './student-record';
 
 export interface SchoolClassRecordProps {
@@ -7,7 +8,7 @@ export interface SchoolClassRecordProps {
 }
 
 export class SchoolClassRecord extends AggregateRoot<SchoolClassRecordProps> {
-  constructor (props: SchoolClassRecordProps, id?: EntityIdentifier) {
+  private constructor (props: SchoolClassRecordProps, id?: EntityIdentifier) {
     super(props, id);
   }
 
@@ -17,5 +18,14 @@ export class SchoolClassRecord extends AggregateRoot<SchoolClassRecordProps> {
 
   get students(): StudentRecord[] {
     return this.props.students;
+  }
+
+  public static create(props: SchoolClassRecordProps, id?: EntityIdentifier) {
+    // TODO: props validation
+    const record = new SchoolClassRecord(props, id);
+
+    record.addDomainEvent(new SchoolClassRecordCreated(record));
+
+    return record;
   }
 }

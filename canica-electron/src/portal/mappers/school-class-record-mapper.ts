@@ -17,7 +17,7 @@ export class SchoolClassRecordMapper {
   }
 
   static toDomain(schoolClassRecord: SchoolClassRecordDataTransfer): SchoolClassRecord {
-    return new SchoolClassRecord(
+    return SchoolClassRecord.create(
       {
         label: schoolClassRecord.label,
         students: schoolClassRecord.students.map(props => new StudentRecord(props)),
