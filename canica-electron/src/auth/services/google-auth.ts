@@ -4,7 +4,6 @@ import { Injectable, emitEvent } from 'annotatron'
 import { BrowserWindow, session } from 'electron';
 import fetch from 'electron-fetch';
 import { stringify } from 'qs';
-import { parse } from 'url';
 
 type PromiseCallback = (param: unknown) => void;
 
@@ -28,8 +27,10 @@ const GOOGLE_AUTHORIZATION_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
 const GOOGLE_TOKEN_URL = 'https://www.googleapis.com/oauth2/v4/token'
 const GOOGLE_PROFILE_URL = 'https://www.googleapis.com/userinfo/v2/me'
 const GOOGLE_REDIRECT_URI = 'http://localhost'
+// TODO: to be removed & passed by the user
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+
 const AUTH_URL_PARAMS = {
   response_type: 'code',
   redirect_uri: GOOGLE_REDIRECT_URI,
@@ -96,16 +97,17 @@ export class GoogleAuthService {
    * @param reject handler for errors
    */
   private handleNavigation(authWindow: BrowserWindow, url: string, resolve: PromiseCallback, reject: PromiseCallback): void {
-    const query = parse(url, true).query
+    // const query = parse(url, true).query
+    const query = new URL(url).searchParams;
     if (query) {
-      if (query.error) {
-        reject(new Error(`There was an error: ${query.error}`))
-      } else if (query.code) {
+      if (query.has('error')) {
+        reject(new Error(`There was an error: ${query.get('error')}`))
+      } else if (query.has('code')) {
         // Login is complete
         authWindow.removeAllListeners('closed')
         setImmediate(() => authWindow.close());
         // This is the authorization code we need to request tokens
-        resolve(query.code);
+        resolve(query.get('code'));
       }
     }
   }
