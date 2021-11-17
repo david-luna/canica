@@ -1348,10 +1348,10 @@ ajv@^8.0.1:
     require-from-string "^2.0.2"
     uri-js "^4.2.2"
 
-annotatron@^0.0.10:
-  version "0.0.10"
-  resolved "https://registry.yarnpkg.com/annotatron/-/annotatron-0.0.10.tgz#f25123606c380c118c357349d20534a20288446b"
-  integrity sha512-xcyN4i3P54tCQhUij0JpemitLMHELw6u/JLEgGLKNdmNY8XSosCt7uLkUghUP8qCVnRtQmBmuhaVDzHnOi6MgQ==
+annotatron@0.0.11:
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/annotatron/-/annotatron-0.0.11.tgz#b0df039c9a81cd500e5b131cd9476ed2ef4178b0"
+  integrity sha512-VPANErNv0HVT2l6BaNhwyMjFJueBj/x5ElPqOhi2f1eMe1Eedgs0bJJUWuclAfPhOfumzaekZmKF/pEleAVyqw==
   dependencies:
     reflect-metadata "^0.1.13"
 

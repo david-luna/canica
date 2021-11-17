@@ -2,7 +2,6 @@ import { Injectable, Event } from 'annotatron';
 import { OAuth2Client } from 'google-auth-library';
 import { drive, drive_v3 } from '@googleapis/drive';
 import { sheets, sheets_v4 } from '@googleapis/sheets';
-
 import { EntityIdentifier, DomainEventsBus, Identifier } from '@common/domain';
 import { SchoolClass, SchoolClassRepository, SchoolYear, Teacher } from '../domain';
 
@@ -22,7 +21,7 @@ const FILE_MIME_TYPE = 'application/vnd.google-apps.spreadsheet'
 function AuthRequired(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
   const originalMethod = descriptor.value;
   descriptor.value = function (...args: unknown[]) {
-      if (!target.googleDrive) {
+      if (!this.googleDrive) {
         throw new Error('Forbidden access to query data');
       }
       return originalMethod.apply(this, args);
@@ -127,8 +126,10 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
         `name contains '${schoolClass.label}'`,
         `mimeType = '${fileMimeType}'`,
         `'${this.googleFolderId}' in parents`,
-      ].join(''),
+      ].join(' and '),
     });
+
+    console.log('query result is', list.data.files);
 
     if (list.data.files.length > 0) {
       // TODO: update the file!?!?!?
@@ -136,6 +137,13 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
       return;
     }
 
+    console.log('creating file', [
+      `${schoolClass.id}`,
+      `${schoolClass.label}`,
+      `${schoolClass.year.start.getFullYear()}`,
+      `${schoolClass.year.end.getFullYear()}`,
+      `${schoolClass.teacher.name}`,
+    ].join('__'));
     // Create the file
     const result = await this.googleDrive.files.create({
       requestBody: {
@@ -236,7 +244,7 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
         `name = 'canica'`,
         `trashed = false`,
         `mimeType = '${folderMimeType}'`,
-      ].join('and')
+      ].join(' and ')
     });
 
     if (list.data.files.length > 0) {

@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, session } from 'electron';
 import * as pie from 'puppeteer-in-electron';
 import * as puppeteer from 'puppeteer-core';
 import { Injectable } from 'annotatron';
@@ -24,7 +24,7 @@ export class WebScrappingService {
 
   async execute(): Promise<void> {
     const browser = await this.browserPromise;
-    const window  = new BrowserWindow();
+    const window  = new BrowserWindow({ webPreferences: { session: session.fromPartition('scrapper') } });
     const page = await pie.getPage(browser, window);
 
     // window.webContents.openDevTools();
