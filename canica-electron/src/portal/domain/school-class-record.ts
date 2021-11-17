@@ -4,12 +4,17 @@ import { StudentRecord } from './student-record';
 
 export interface SchoolClassRecordProps {
   label: string;
+  year: string;
   students: StudentRecord[];
 }
 
 export class SchoolClassRecord extends AggregateRoot<SchoolClassRecordProps> {
   private constructor (props: SchoolClassRecordProps, id?: EntityIdentifier) {
     super(props, id);
+  }
+
+  get year(): string {
+    return this.props.year;
   }
 
   get label(): string {
@@ -21,11 +26,14 @@ export class SchoolClassRecord extends AggregateRoot<SchoolClassRecordProps> {
   }
 
   public static create(props: SchoolClassRecordProps, id?: EntityIdentifier) {
-    // TODO: props validation
     const record = new SchoolClassRecord(props, id);
 
     record.addDomainEvent(new SchoolClassRecordCreated(record));
 
     return record;
+  }
+
+  public addStudent(student: StudentRecord) {
+    this.props.students.push(student);
   }
 }

@@ -17,7 +17,7 @@ export class SchoolClassRepositoryMemory extends SchoolClassRepository {
   }
 
   findClassById(id: EntityIdentifier): Promise<SchoolClass | null> {
-    const filterClass = new SchoolClass({} as SchoolClassProps, id);
+    const filterClass = SchoolClass.create({} as SchoolClassProps, id);
     
     return Promise.resolve(this.classes.find((c) => c.equals(filterClass)) || null);
   }

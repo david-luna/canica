@@ -7,6 +7,7 @@ export class SchoolClassRecordMapper {
   static toDataTransfer(schoolClassRecord: SchoolClassRecord): SchoolClassRecordDataTransfer {
     return {
       _id: schoolClassRecord.id.toString(),
+      year: schoolClassRecord.year.toString(),
       label: schoolClassRecord.label.toString(),
       students: schoolClassRecord.props.students.map(s => ({
         code: s.code.toString(),
@@ -20,6 +21,7 @@ export class SchoolClassRecordMapper {
     return SchoolClassRecord.create(
       {
         label: schoolClassRecord.label,
+        year: schoolClassRecord.year,
         students: schoolClassRecord.students.map(props => new StudentRecord(props)),
       },
       new Identifier(schoolClassRecord._id)

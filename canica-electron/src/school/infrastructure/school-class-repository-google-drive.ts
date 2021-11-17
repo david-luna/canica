@@ -140,6 +140,7 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
     const result = await this.googleDrive.files.create({
       requestBody: {
         name: [
+          `${schoolClass.id}`,
           `${schoolClass.label}`,
           `${schoolClass.year.start.getFullYear()}`,
           `${schoolClass.year.end.getFullYear()}`,
@@ -152,36 +153,36 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
     });
 
     // With the file ID use the spreadsheet API to add content
-    const spreadsheetId = result.data.id;
-    await this.googleSheets.spreadsheets.batchUpdate({
-      spreadsheetId,
-      requestBody: {
-        requests: [
-          {
-            updateSheetProperties: {
-              properties: {
-                gridProperties: {
-                  rowCount: schoolClass.students.length,
-                  columnCount: 1,
-                }
-              },
-              fields: 'gridProperties(rowCount,columnCount)'
-            }
-          },
-          {
-            appendCells: {
-              fields: '*',
-              rows: [
-                { values: [{ effectiveValue: { stringValue: 'Student Name' } }] },
-                { values: [{ effectiveValue: { stringValue: 'StudentA' } }] },
-                { values: [{ effectiveValue: { stringValue: 'StudentB' } }] },
-                { values: [{ effectiveValue: { stringValue: 'StudentC' } }] },
-              ]
-            }
-          }
-        ],
-      }
-    });
+    // const spreadsheetId = result.data.id;
+    // await this.googleSheets.spreadsheets.batchUpdate({
+    //   spreadsheetId,
+    //   requestBody: {
+    //     requests: [
+    //       {
+    //         updateSheetProperties: {
+    //           properties: {
+    //             gridProperties: {
+    //               rowCount: schoolClass.students.length,
+    //               columnCount: 1,
+    //             }
+    //           },
+    //           fields: 'gridProperties(rowCount,columnCount)'
+    //         }
+    //       },
+    //       {
+    //         appendCells: {
+    //           fields: '*',
+    //           rows: [
+    //             { values: [{ effectiveValue: { stringValue: 'Student Name' } }] },
+    //             { values: [{ effectiveValue: { stringValue: 'StudentA' } }] },
+    //             { values: [{ effectiveValue: { stringValue: 'StudentB' } }] },
+    //             { values: [{ effectiveValue: { stringValue: 'StudentC' } }] },
+    //           ]
+    //         }
+    //       }
+    //     ],
+    //   }
+    // });
 
     this.eventsBus.dispatchEvents(schoolClass);
     return Promise.resolve();
@@ -194,10 +195,9 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
    * @param file the drive file details (id, name, ...)
    */
   private fromDetails(file: FileDetails): SchoolClass {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [ label, startYear, endYear, teacherName, id ] = file.name.split('__');
 
-    return new SchoolClass(
+    return SchoolClass.create(
       {
         label: label,
         teacher: new Teacher({ name: teacherName }),
@@ -232,7 +232,11 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
       corpora: 'user',
       spaces : 'drive',
       fields : 'files/id, files/name',
-      q      : `name = 'canica' and mimeType = '${folderMimeType}'`,
+      q      : [
+        `name = 'canica'`,
+        `trashed = false`,
+        `mimeType = '${folderMimeType}'`,
+      ].join('and')
     });
 
     if (list.data.files.length > 0) {

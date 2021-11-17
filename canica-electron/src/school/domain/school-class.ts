@@ -12,8 +12,12 @@ export interface SchoolClassProps {
 }
 
 export class SchoolClass extends AggregateRoot<SchoolClassProps> {
-  constructor (props: SchoolClassProps, id?: EntityIdentifier) {
+  private constructor (props: SchoolClassProps, id?: EntityIdentifier) {
     super(props, id);
+  }
+
+  get id(): EntityIdentifier {
+    return this._id;
   }
 
   get label(): string {
@@ -30,5 +34,9 @@ export class SchoolClass extends AggregateRoot<SchoolClassProps> {
 
   get students(): Student[] {
     return this.props.students;
+  }
+
+  static create(props: SchoolClassProps, id?: EntityIdentifier) {
+    return new SchoolClass(props, id);
   }
 }

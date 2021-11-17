@@ -2,15 +2,14 @@ import { app, BrowserWindow } from 'electron';
 import * as pie from 'puppeteer-in-electron';
 import * as puppeteer from 'puppeteer-core';
 import { Injectable } from 'annotatron';
+import { SchoolClassRecord, StudentRecord } from '../domain';
+import { DomainEventsBus } from '@common/domain';
+import { SchoolClassRecordDataTransfer } from '@portal/data-transfer';
+import { SchoolClassRecordMapper } from '@portal/mappers/school-class-record-mapper';
 
 // TODO: to be removed & passed by the user
 const username = process.env.PLATFORM_USERNAME;
 const password = process.env.PLATFORM_PASSWORD;
-
-interface PuppeteerContext {
-  browser: puppeteer.Browser;
-  window: BrowserWindow;
-}
 
 interface Credentials { username: string, password: string }
 
@@ -18,8 +17,7 @@ interface Credentials { username: string, password: string }
 export class WebScrappingService {
   private browserPromise: Promise<puppeteer.Browser>;
 
-  constructor () {
-    console.log('connecting')
+  constructor (private eventsBus: DomainEventsBus) {
     this.browserPromise = pie.initialize(app)
       .then(() => pie.connect(app,puppeteer));
   }
@@ -29,13 +27,21 @@ export class WebScrappingService {
     const window  = new BrowserWindow();
     const page = await pie.getPage(browser, window);
 
-    window.webContents.openDevTools();
+    // window.webContents.openDevTools();
 
     await this.login(page, { username, password });
-    await this.listClasses(page);
+    const classData  = await this.listClasses(page);
+
+    for (const data of classData) {
+      await this.getClassStudents(page, data);
+      const record = SchoolClassRecordMapper.toDomain(data);
+      this.eventsBus.dispatchEvents(record);
+    }
+
+    window.close();
   }
 
-  private async login(page: puppeteer.Page, credentials: Credentials ): Promise<puppeteer.Page> {
+  private async login(page: puppeteer.Page, credentials: Credentials ): Promise<void> {
     const { username, password } = credentials;
     const url = 'https://bfgh.aplicacions.ensenyament.gencat.cat/bfgh/';
 
@@ -46,27 +52,38 @@ export class WebScrappingService {
     await page.click('input[type="submit"]');
     await page.waitForNetworkIdle();
     await page.waitForSelector('#logoutIcon');
-
-    return page;
   }
 
-  private async listClasses(page: puppeteer.Page): Promise<puppeteer.Page> {
+  private async listClasses(page: puppeteer.Page): Promise<SchoolClassRecordDataTransfer[]> {
     const url = 'https://bfgh.aplicacions.ensenyament.gencat.cat/bfgh/avaluacio/parcialAvaluacioGrupMateria';
     const tableSelector = '[data-st-table="vm.display_parcialAvaluacioGrupMaterias"] tbody';
 
     await page.goto(url);
-    console.log('witing for table');
     await page.waitForNetworkIdle();
     await page.waitForSelector(`${tableSelector} tr`);
-    console.log('witing for table DONE!!!');
+    
+    const records = await page.$$eval(`${tableSelector} tr`, (rows) => rows.map(tr => ({
+      _id: (tr.querySelector('td:nth-child(3)') as HTMLTableCellElement).innerText,
+      year: (tr.querySelector('td:nth-child(2)') as HTMLTableCellElement).innerText,
+      label: (tr.querySelector('td:nth-child(4)') as HTMLTableCellElement).innerText,
+      students: [],
+    })));
 
-    const records = await page.$$eval(`${tableSelector} tr`, (rows) => rows.map( tr => [
-      (tr.querySelector('td:nth-child(3)') as HTMLTableCellElement).innerText,
-      (tr.querySelector('td:nth-child(4)') as HTMLTableCellElement).innerText,
-    ]));
+    return records;
+  }
 
-    console.log('get records', records);
+  private async getClassStudents(
+    page: puppeteer.Page,
+    classData: SchoolClassRecordDataTransfer
+  ): Promise<void> {
+    const students = [...new Array(25)].map((_, index) => new StudentRecord({
+      code: `${index}`.padStart(8, '0'),
+      name: `Student-${index}`,
+      grade: '',
+    }));
 
-    return page;
+    students.forEach(s => classData.students.push(s));
+
+    return new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }

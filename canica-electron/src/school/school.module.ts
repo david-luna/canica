@@ -1,6 +1,7 @@
 import { ElectronModule } from 'annotatron';
 import { SchoolClassRepository } from './domain';
 import { SchoolClassRepositoryGoogleDrive } from './infrastructure';
+import { AfterSchoolClassRecordCreated } from './subscribers/after-school-class-record-created';
 import { ListSchoolClassesUseCase } from './use-cases/list-school-classes';
 
 @ElectronModule({
@@ -13,6 +14,8 @@ import { ListSchoolClassesUseCase } from './use-cases/list-school-classes';
       provide: SchoolClassRepository,
       useClass: SchoolClassRepositoryGoogleDrive,
     },
+    // Subscribers to events
+    AfterSchoolClassRecordCreated,
   ],
 })
 export class SchoolModule {}
