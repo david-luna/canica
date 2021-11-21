@@ -1,7 +1,7 @@
 export interface StudentRecordDataTransfer {
   code: string;
   name: string;
-  grade: string;
+  grades: string[];
 }
 
 export interface SchoolClassRecordDataTransfer {

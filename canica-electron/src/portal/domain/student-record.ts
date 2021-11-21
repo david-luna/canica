@@ -3,7 +3,7 @@ import { ValueObject } from '@common/domain';
 export interface StudentRecordProps {
   code: string;
   name: string;
-  grade: string;
+  grades: string[];
 }
 
 export class StudentRecord extends ValueObject<StudentRecordProps> {
@@ -19,7 +19,7 @@ export class StudentRecord extends ValueObject<StudentRecordProps> {
     return this.props.name;
   }
 
-  get grade(): string {
-    return this.props.grade;
+  get grades(): string[] {
+    return this.props.grades;
   }
 }

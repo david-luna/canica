@@ -1,9 +1,10 @@
 import { Event, Injectable, emitEvent } from 'annotatron';
-import { DomainEventHandler, Identifier } from '@common/domain';
+import { DomainEventHandler } from '@common/domain';
 import { SchoolClassRecordCreated } from '@portal/domain';
 import { SchoolClassRepository } from '@school/domain';
 import { SchoolClassRecordDataTransfer } from '@portal/data-transfer';
 import { SchoolClassMapper } from '@school/mappers';
+import { Grade } from '@school/domain/grade';
 
 @Injectable()
 export class AfterSchoolClassRecordCreated implements DomainEventHandler<SchoolClassRecordDataTransfer> {
@@ -11,7 +12,6 @@ export class AfterSchoolClassRecordCreated implements DomainEventHandler<SchoolC
 
   @Event(SchoolClassRecordCreated.name)
   async handle(payload: SchoolClassRecordDataTransfer): Promise<void> {
-    console.log('handling record created', payload);
     const schoolClass = SchoolClassMapper.toDomain({
       _id: payload._id,
       label: payload.label,
@@ -20,7 +20,7 @@ export class AfterSchoolClassRecordCreated implements DomainEventHandler<SchoolC
       students: payload.students.map(s => ({
         code: s.code,
         name: s.name,
-        grades: [],
+        grades: s.grades.map(value => new Grade({ name: '', formula: '', value })),
       })),
     });
 

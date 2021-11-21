@@ -4,6 +4,7 @@ import { drive, drive_v3 } from '@googleapis/drive';
 import { sheets, sheets_v4 } from '@googleapis/sheets';
 import { EntityIdentifier, DomainEventsBus, Identifier } from '@common/domain';
 import { SchoolClass, SchoolClassRepository, SchoolYear, Teacher } from '../domain';
+import { StudentMapper } from '@school/mappers';
 
 interface GoogleToken {
   access_token: string;
@@ -116,7 +117,7 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
   @AuthRequired
   async save(schoolClass: SchoolClass): Promise<unknown> {
     const fileMimeType = 'application/vnd.google-apps.spreadsheet'
-    // TODO: update via google drive API (create the file or update)
+
     // Check if already exists
     const list = await this.googleDrive.files.list({
       corpora: 'user',
@@ -129,22 +130,13 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
       ].join(' and '),
     });
 
-    console.log('query result is', list.data.files);
-
     if (list.data.files.length > 0) {
       // TODO: update the file!?!?!?
       this.googleFolderId = list.data.files[0].id;
       return;
     }
 
-    console.log('creating file', [
-      `${schoolClass.id}`,
-      `${schoolClass.label}`,
-      `${schoolClass.year.start.getFullYear()}`,
-      `${schoolClass.year.end.getFullYear()}`,
-      `${schoolClass.teacher.name}`,
-    ].join('__'));
-    // Create the file
+    // Create the file if not present
     const result = await this.googleDrive.files.create({
       requestBody: {
         name: [
@@ -161,39 +153,35 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
     });
 
     // With the file ID use the spreadsheet API to add content
-    // const spreadsheetId = result.data.id;
-    // await this.googleSheets.spreadsheets.batchUpdate({
-    //   spreadsheetId,
-    //   requestBody: {
-    //     requests: [
-    //       {
-    //         updateSheetProperties: {
-    //           properties: {
-    //             gridProperties: {
-    //               rowCount: schoolClass.students.length,
-    //               columnCount: 1,
-    //             }
-    //           },
-    //           fields: 'gridProperties(rowCount,columnCount)'
-    //         }
-    //       },
-    //       {
-    //         appendCells: {
-    //           fields: '*',
-    //           rows: [
-    //             { values: [{ effectiveValue: { stringValue: 'Student Name' } }] },
-    //             { values: [{ effectiveValue: { stringValue: 'StudentA' } }] },
-    //             { values: [{ effectiveValue: { stringValue: 'StudentB' } }] },
-    //             { values: [{ effectiveValue: { stringValue: 'StudentC' } }] },
-    //           ]
-    //         }
-    //       }
-    //     ],
-    //   }
-    // });
+    const spreadsheetId = result.data.id;
+    await this.saveStudents(schoolClass, spreadsheetId);
 
     this.eventsBus.dispatchEvents(schoolClass);
     return Promise.resolve();
+  }
+
+  /**
+   * Stores te students info into the spreadseet related to the ID
+   *
+   * @param schoolClass the class of te students (aggreagate)
+   * @param spreadsheetId indicates which spreadsheed must contain the students
+   */
+  private async saveStudents(schoolClass: SchoolClass, spreadsheetId: string): Promise<void> {
+    const result = await this.googleSheets.spreadsheets.values.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        valueInputOption: 'RAW',
+        data:  [
+          {
+            range: 'Sheet1!A:Z',
+            majorDimension: 'ROWS',
+            values: schoolClass.students.map(s => StudentMapper.toStorage(s)),
+          }
+        ],
+      }
+    })
+
+    console.log('Spreadseet result', result);
   }
 
   /**
