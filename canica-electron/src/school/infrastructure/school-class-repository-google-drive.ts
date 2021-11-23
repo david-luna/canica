@@ -1,4 +1,4 @@
-import { Injectable, Event } from 'annotatron';
+import { Injectable, Event, emitEvent } from 'annotatron';
 import { OAuth2Client } from 'google-auth-library';
 import { drive, drive_v3 } from '@googleapis/drive';
 import { sheets, sheets_v4 } from '@googleapis/sheets';
@@ -173,15 +173,21 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
         valueInputOption: 'RAW',
         data:  [
           {
-            range: 'Sheet1!A:Z',
+            range: 'Sheet1!A:ZZ',
             majorDimension: 'ROWS',
             values: schoolClass.students.map(s => StudentMapper.toStorage(s)),
           }
         ],
       }
-    })
+    });
 
-    console.log('Spreadseet result', result);
+    if (result.status !== 200) {
+      // TODO: proper error type & payload
+      emitEvent({
+        type: 'GoogleError',
+        payload: `Error saving class data ${result.statusText}`,
+      });
+    }
   }
 
   /**

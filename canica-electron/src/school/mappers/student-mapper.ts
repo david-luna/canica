@@ -1,6 +1,4 @@
-/// <reference path='../../../node_modules/@googleapis/sheets/build/v4.d.ts' />
-import { sheets_v4 } from "@googleapis/sheets";
-import { Student } from "@school/domain";
+import { Student } from "../domain";
 import { StudentDataTransfer } from "../data-transfer";
 import { GradeMapper } from "./grade-mapper";
 

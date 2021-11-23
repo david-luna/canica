@@ -18,6 +18,9 @@ const enum PortalUrls {
 }
 
 const enum PortalSelectors {
+  ClassTableSelector = '[data-st-table="vm.display_parcialAvaluacioGrupMaterias"] tbody',
+  ClassTableRowSelector = '[data-st-table="vm.display_parcialAvaluacioGrupMaterias"] tbody tr',
+  StudentsTableRowSelector = '[data-st-table="vm.dummyStudents"] tbody tr',
 }
 
 interface Credentials { username: string, password: string }
@@ -42,13 +45,10 @@ export class WebScrappingService {
     const classData  = await this.listClasses(page);
 
     for(let i = 0; i < classData.length; i++) {
-      // TODO: remove mocks 
-      await this.getClassStudentsMock(page, classData[i], i + 1);
+      await this.getClassStudents(page, classData[i], i + 1);
       const record = SchoolClassRecordMapper.toDomain(classData[i]);
       this.eventsBus.dispatchEvents(record);
     }
-
-    console.log('got all classes');
 
     window.close();
   }
@@ -66,13 +66,13 @@ export class WebScrappingService {
   }
 
   private async listClasses(page: puppeteer.Page): Promise<SchoolClassRecordDataTransfer[]> {
-    const tableSelector = '[data-st-table="vm.display_parcialAvaluacioGrupMaterias"] tbody';
+    const classRowSelector = PortalSelectors.ClassTableRowSelector;
 
     await page.goto(PortalUrls.ClassListByGroup);
     await page.waitForNetworkIdle();
-    await page.waitForSelector(`${tableSelector} tr`);
+    await page.waitForSelector(classRowSelector);
     
-    const records = await page.$$eval(`${tableSelector} tr`, (rows) => rows.map(tr => ({
+    const records = await page.$$eval(classRowSelector, (rows) => rows.map(tr => ({
       _id: (tr.querySelector('td:nth-child(3)') as HTMLTableCellElement).innerText,
       year: (tr.querySelector('td:nth-child(2)') as HTMLTableCellElement).innerText,
       label: (tr.querySelector('td:nth-child(4)') as HTMLTableCellElement).innerText,
@@ -82,49 +82,25 @@ export class WebScrappingService {
     return records;
   }
 
-  private async getClassStudentsMock(
-    page: puppeteer.Page,
-    classData: SchoolClassRecordDataTransfer,
-    index: number,
-  ): Promise<void> {
-    // TODO: add te data from the page
-    const students = [...new Array(25)].map((_, index) => new StudentRecord({
-      code: `${Math.floor(Math.random() * 10000)}`.padStart(8, '0'),
-      name: `Student-${index}`,
-      grades: [...new Array(15)].map((_, index) => `${index}`),
-    }));
-
-    students.forEach(s => classData.students.push(s));
-
-    return new Promise((resolve) => setTimeout(resolve, 1000));
-  }
-
   private async getClassStudents(
     page: puppeteer.Page,
     classData: SchoolClassRecordDataTransfer,
     index: number,
   ): Promise<void> {
-    const tableSelector = '[data-st-table="vm.display_parcialAvaluacioGrupMaterias"] tbody';
-    const linkSelector = `${tableSelector} tr:nth-child(${index}) a`;
-    const studentsSelector = `[data-st-table="vm.dummyStudents"] tbody tr`;
+    const tableSelector = PortalSelectors.ClassTableRowSelector;
+    const linkSelector = `${tableSelector}:nth-child(${index}) a`;
+    const studentsSelector = PortalSelectors.StudentsTableRowSelector;
 
-    console.log('cliking on link', linkSelector);
+    await page.click(linkSelector);
+    await page.waitForSelector(studentsSelector);
+    await page.waitForNetworkIdle();
 
-    await Promise.all([
-      page.waitForSelector(studentsSelector),
-      page.click(linkSelector),
-    ]);
-
-    console.log('extracting student data');
-
-
+    // TODO: extract ina generic way { code, value } for all students
     const studentData = await page.$$eval(`${studentsSelector}`, (rows) => rows.map(tr => ({
       code: (tr.querySelector('td:nth-child(1)') as HTMLTableCellElement).innerText,
       name: (tr.querySelector('td:nth-child(2)') as HTMLTableCellElement).innerText,
-      grades: [...new Array(25)].map((_, index) => `${index}`),
+      grades: (new Array(25).fill(0)).map((_, index) => `${index}`),
     })));
-
-    console.log('students fo class', studentData);
 
     classData.students.push(...studentData);
 
@@ -132,10 +108,8 @@ export class WebScrappingService {
   }
 
   private async goToClassList(page: puppeteer.Page): Promise<void> {
-    const tableSelector = '[data-st-table="vm.display_parcialAvaluacioGrupMaterias"] tbody';
-
     await page.goto(PortalUrls.ClassListByGroup);
     await page.waitForNetworkIdle();
-    await page.waitForSelector(`${tableSelector} tr`);
+    await page.waitForSelector(PortalSelectors.ClassTableRowSelector);
   }
 }
