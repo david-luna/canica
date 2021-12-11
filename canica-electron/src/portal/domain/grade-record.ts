@@ -1,14 +1,13 @@
-import { ValueObject } from "@common/domain";
+import { ValueObject } from '@common/domain';
 
-export interface GradeProps {
+export interface GradeRecordProps {
   code: string;
   name: string;
-  value: string;
   options: string[];
 }
 
-export class Grade extends ValueObject<GradeProps> {
-  constructor(props: GradeProps) {
+export class GradeRecord extends ValueObject<GradeRecordProps> {
+  constructor (props: GradeRecordProps) {
     super(props);
   }
 
@@ -18,10 +17,6 @@ export class Grade extends ValueObject<GradeProps> {
 
   get name(): string {
     return this.props.name;
-  }
-
-  get value(): string {
-    return this.props.value;
   }
 
   get options(): string[] {

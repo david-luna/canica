@@ -20,7 +20,7 @@ export class AfterSchoolClassRecordCreated implements DomainEventHandler<SchoolC
       students: payload.students.map(s => ({
         code: s.code,
         name: s.name,
-        grades: s.grades.map(value => new Grade({ name: '', formula: '', value })),
+        grades: s.grades.map(grade => new Grade({ ...grade, value: '' })),
       })),
     });
 

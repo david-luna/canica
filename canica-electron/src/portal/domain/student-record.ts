@@ -1,9 +1,10 @@
 import { ValueObject } from '@common/domain';
+import { GradeRecord } from './grade-record';
 
 export interface StudentRecordProps {
   code: string;
   name: string;
-  grades: string[];
+  grades: GradeRecord[];
 }
 
 export class StudentRecord extends ValueObject<StudentRecordProps> {
@@ -19,7 +20,7 @@ export class StudentRecord extends ValueObject<StudentRecordProps> {
     return this.props.name;
   }
 
-  get grades(): string[] {
+  get grades(): GradeRecord[] {
     return this.props.grades;
   }
 }

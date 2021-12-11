@@ -1,7 +1,8 @@
 export interface GradeDataTransfer {
+  code: string;
   name: string;
-  formula: string;
   value: string;
+  options: string[];
 }
 
 export interface StudentDataTransfer {

@@ -167,6 +167,12 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
    * @param spreadsheetId indicates which spreadsheed must contain the students
    */
   private async saveStudents(schoolClass: SchoolClass, spreadsheetId: string): Promise<void> {
+    const gradesList = schoolClass.students[0].grades;
+    const studentHeaders = [
+      'CODI',
+      'ALUMNE',
+      ...gradesList.map(grade => grade.code),
+    ];
     const result = await this.googleSheets.spreadsheets.values.batchUpdate({
       spreadsheetId,
       requestBody: {
@@ -175,7 +181,11 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
           {
             range: 'Sheet1!A:ZZ',
             majorDimension: 'ROWS',
-            values: schoolClass.students.map(s => StudentMapper.toStorage(s)),
+            values: [
+              studentHeaders,
+              ...schoolClass.students.map(s => StudentMapper.toStorage(s)),
+            ],
+            
           }
         ],
       }

@@ -1,6 +1,7 @@
 import { Identifier } from '@common/domain';
 import { SchoolClassRecord, StudentRecord } from '../domain';
 import { SchoolClassRecordDataTransfer } from '../data-transfer';
+import { GradeRecord } from '@portal/domain/grade-record';
 
 
 export class SchoolClassRecordMapper {
@@ -12,7 +13,11 @@ export class SchoolClassRecordMapper {
       students: schoolClassRecord.props.students.map(s => ({
         code: s.code.toString(),
         name: s.name.toString(),
-        grades: s.grades.map(g => `${g}`),
+        grades: s.grades.map(g => ({
+          code: g.code.toString(),
+          name: g.name.toString(),
+          options: g.options.map(o => o.toString()),
+        })),
       })),
     };
   }
@@ -22,7 +27,11 @@ export class SchoolClassRecordMapper {
       {
         label: schoolClassRecord.label,
         year: schoolClassRecord.year,
-        students: schoolClassRecord.students.map(props => new StudentRecord(props)),
+        students: schoolClassRecord.students.map(studentRecord => {
+          const grades = studentRecord.grades.map(g => new GradeRecord(g));
+          const props = { ...studentRecord, grades };
+          return new StudentRecord(props)
+        }),
       },
       new Identifier(schoolClassRecord._id)
     );

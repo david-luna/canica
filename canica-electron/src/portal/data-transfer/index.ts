@@ -1,7 +1,13 @@
+export interface GradeRecordDataTransfer {
+  code: string;
+  name: string;
+  options: string[];
+}
+
 export interface StudentRecordDataTransfer {
   code: string;
   name: string;
-  grades: string[];
+  grades: GradeRecordDataTransfer[];
 }
 
 export interface SchoolClassRecordDataTransfer {
