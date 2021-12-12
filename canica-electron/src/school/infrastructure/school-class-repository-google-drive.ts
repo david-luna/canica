@@ -1,10 +1,10 @@
-import { Injectable, Event } from 'annotatron';
+import { Injectable, Event, emitEvent } from 'annotatron';
 import { OAuth2Client } from 'google-auth-library';
 import { drive, drive_v3 } from '@googleapis/drive';
 import { sheets, sheets_v4 } from '@googleapis/sheets';
-
 import { EntityIdentifier, DomainEventsBus, Identifier } from '@common/domain';
 import { SchoolClass, SchoolClassRepository, SchoolYear, Teacher } from '../domain';
+import { StudentMapper } from '@school/mappers';
 
 interface GoogleToken {
   access_token: string;
@@ -15,13 +15,14 @@ interface FileDetails {
   name: string;
 }
 
+// TODO: maybe a utility class
 const FILE_MIME_TYPE = 'application/vnd.google-apps.spreadsheet'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function AuthRequired(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
   const originalMethod = descriptor.value;
   descriptor.value = function (...args: unknown[]) {
-      if (!target.googleDrive) {
+      if (!this.googleDrive) {
         throw new Error('Forbidden access to query data');
       }
       return originalMethod.apply(this, args);
@@ -59,7 +60,7 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
     const result = await this.googleDrive.files.list({
       corpora: 'user',
       spaces : 'drive',
-      fields: 'files/id, files/name',
+      fields : 'files/id, files/name',
       q      : [
         `name contains '${id}'`,
         `mimeType = '${FILE_MIME_TYPE}'`,
@@ -116,7 +117,7 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
   @AuthRequired
   async save(schoolClass: SchoolClass): Promise<unknown> {
     const fileMimeType = 'application/vnd.google-apps.spreadsheet'
-    // TODO: update via google drive API (create the file or update)
+
     // Check if already exists
     const list = await this.googleDrive.files.list({
       corpora: 'user',
@@ -126,7 +127,7 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
         `name contains '${schoolClass.label}'`,
         `mimeType = '${fileMimeType}'`,
         `'${this.googleFolderId}' in parents`,
-      ].join(''),
+      ].join(' and '),
     });
 
     if (list.data.files.length > 0) {
@@ -135,10 +136,11 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
       return;
     }
 
-    // Create the file
+    // Create the file if not present
     const result = await this.googleDrive.files.create({
       requestBody: {
         name: [
+          `${schoolClass.id}`,
           `${schoolClass.label}`,
           `${schoolClass.year.start.getFullYear()}`,
           `${schoolClass.year.end.getFullYear()}`,
@@ -152,40 +154,96 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
 
     // With the file ID use the spreadsheet API to add content
     const spreadsheetId = result.data.id;
-    await this.googleSheets.spreadsheets.batchUpdate({
+    await this.saveStudents(schoolClass, spreadsheetId);
+
+    this.eventsBus.dispatchEvents(schoolClass);
+    return Promise.resolve();
+  }
+
+  /**
+   * Stores te students info into the spreadseet related to the ID
+   *
+   * @param schoolClass the class of te students (aggreagate)
+   * @param spreadsheetId indicates which spreadsheed must contain the students
+   */
+  private async saveStudents(schoolClass: SchoolClass, spreadsheetId: string): Promise<void> {
+    const gradesList = schoolClass.students[0].grades;
+    const studentHeaders = [
+      'CODI',
+      'ALUMNE',
+      ...gradesList.map(grade => grade.code),
+    ];
+    const result = await this.googleSheets.spreadsheets.values.batchUpdate({
       spreadsheetId,
       requestBody: {
-        requests: [
+        valueInputOption: 'RAW',
+        data:  [
           {
-            updateSheetProperties: {
-              properties: {
-                gridProperties: {
-                  rowCount: schoolClass.students.length,
-                  columnCount: 1,
-                }
-              },
-              fields: 'gridProperties(rowCount,columnCount)'
-            }
-          },
-          {
-            appendCells: {
-              fields: '*',
-              rows: [
-                { values: [{ effectiveValue: { stringValue: 'Student Name' } }] },
-                { values: [{ effectiveValue: { stringValue: 'StudentA' } }] },
-                { values: [{ effectiveValue: { stringValue: 'StudentB' } }] },
-                { values: [{ effectiveValue: { stringValue: 'StudentC' } }] },
-              ]
-            }
+            range: 'Sheet1!A:ZZ',
+            majorDimension: 'ROWS',
+            values: [
+              studentHeaders,
+              ...schoolClass.students.map(s => StudentMapper.toStorage(s)),
+            ],
+            
           }
         ],
       }
     });
 
+    const startRowIndex = 1, endRowIndex = schoolClass.students.length + 1;
+    const startColumnIndex = 2, endColumnIndex = schoolClass.students[0].grades.length + 2;
+    const gradeList = schoolClass.students[0].grades;
+    const gradeOptions = gradeList[0].options;
+    const format = await this.googleSheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [
+          // Add notes for grade codes
+          {
+            updateCells: {
+              range: {
+                startRowIndex: 0, endRowIndex: 1,
+                startColumnIndex, endColumnIndex,
+              },
+              rows: [
+                { values: gradesList.map(g => ({ note: g.name })) },
+              ],
+              fields: "note",
+            }
+          },
+          // Create dropdows for grade options
+          {
+            setDataValidation: {
+              range: {
+                startRowIndex,
+                endRowIndex,
+                startColumnIndex,
+                endColumnIndex,
+              },
+              rule: {
+                condition: {
+                  type: 'ONE_OF_LIST',
+                  values: gradeOptions.map((go) => ({ userEnteredValue: go }))
+                  
+                },
+                showCustomUi: true,
+                strict: true
+              }
+            }
+          }
+        ]
+      }
+    })
 
-
-    this.eventsBus.dispatchEvents(schoolClass);
-    return Promise.resolve();
+    if (result.status !== 200 || format.status !== 200) {
+      // TODO: proper error type & payload
+      const source = result.status !== 200 ? result : format;
+      emitEvent({
+        type: 'GoogleError',
+        payload: `Error saving class data ${source.statusText}`,
+      });
+    }
   }
 
   /**
@@ -195,10 +253,9 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
    * @param file the drive file details (id, name, ...)
    */
   private fromDetails(file: FileDetails): SchoolClass {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [ label, startYear, endYear, teacherName, id ] = file.name.split('__');
 
-    return new SchoolClass(
+    return SchoolClass.create(
       {
         label: label,
         teacher: new Teacher({ name: teacherName }),
@@ -233,7 +290,11 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
       corpora: 'user',
       spaces : 'drive',
       fields : 'files/id, files/name',
-      q      : `name = 'canica' and mimeType = '${folderMimeType}'`,
+      q      : [
+        `name = 'canica'`,
+        `trashed = false`,
+        `mimeType = '${folderMimeType}'`,
+      ].join(' and ')
     });
 
     if (list.data.files.length > 0) {

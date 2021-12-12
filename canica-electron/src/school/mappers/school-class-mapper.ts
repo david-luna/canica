@@ -16,7 +16,7 @@ export class SchoolClassMapper {
   }
 
   static toDomain(schoolClass: SchoolClassDataTransfer): SchoolClass {
-    return new SchoolClass(
+    return SchoolClass.create(
       {
         label: schoolClass.label,
         teacher: new Teacher(schoolClass.teacher),

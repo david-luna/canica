@@ -49,8 +49,8 @@
     }
   },
   "devDependencies": {
-    "@electron-forge/cli": "^6.0.0-beta.54",
-    "@electron-forge/maker-deb": "^6.0.0-beta.54",
+    "@electron-forge/cli": "^6.0.0-beta.61",
+    "@electron-forge/maker-deb": "^6.0.0-beta.61",
     "@electron-forge/maker-rpm": "^6.0.0-beta.54",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.54",
     "@electron-forge/maker-zip": "^6.0.0-beta.54",
@@ -76,11 +76,13 @@
   "dependencies": {
     "@googleapis/drive": "^0.3.1",
     "@googleapis/sheets": "^0.3.0",
-    "annotatron": "^0.0.10",
+    "annotatron": "0.0.11",
     "electron-fetch": "^1.7.3",
     "electron-reload": "^1.5.0",
     "electron-squirrel-startup": "^1.0.0",
     "google-auth-library": "^7.3.0",
+    "puppeteer-core": "^10.2.0",
+    "puppeteer-in-electron": "^3.0.5",
     "qs": "^6.5.2",
     "shallow-equal-object": "^1.1.1",
     "ts-node": "^10.0.0",

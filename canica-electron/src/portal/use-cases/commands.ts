@@ -1,0 +1,16 @@
+
+export type ImportDataType = 'import-data';
+
+export interface ImportDataCommand {
+  username: string;
+  password: string;
+  debug: boolean;
+}
+
+export interface ImportDataResult {
+  type: ImportDataType;
+}
+
+export enum CommandTypes {
+  ImportData = 'import-data',
+}

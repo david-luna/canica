@@ -1,5 +1,6 @@
 import { AggregateRoot } from "../aggregate-root";
 import { Injectable } from "annotatron";
+import { DomainEvent } from './domain-event';
 
 @Injectable()
 export class DomainEventsBus {

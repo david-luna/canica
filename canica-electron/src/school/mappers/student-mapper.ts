@@ -1,4 +1,4 @@
-import { Student } from "@school/domain";
+import { Student } from "../domain";
 import { StudentDataTransfer } from "../data-transfer";
 import { GradeMapper } from "./grade-mapper";
 
@@ -17,5 +17,11 @@ export class StudentMapper {
       name: data.name,
       grades: data.grades.map(g => GradeMapper.toDomain(g)),
     });
+  }
+
+  static toStorage(student: Student): string[] {
+    return [
+      student.code, student.name, ...student.grades.map(grade => grade.value),
+    ];
   }
 }
