@@ -3,10 +3,9 @@ import * as pie from 'puppeteer-in-electron';
 import * as puppeteer from 'puppeteer-core';
 import { Injectable } from 'annotatron';
 import { DomainEventsBus } from '@common/domain';
-import { GradeRecordDataTransfer, SchoolClassRecordDataTransfer, StudentRecordDataTransfer } from '../data-transfer';
+import { GradeRecordDataTransfer, SchoolClassRecordDataTransfer } from '../data-transfer';
 import { SchoolClassRecordMapper } from '../mappers/school-class-record-mapper';
 import { GRADES_LIST, GRADE_OPTIONS } from './_fixtures/grades-data';
-
 
 type ClassListResponse = {
   list: {
@@ -80,8 +79,8 @@ export class WebScrappingService {
 
       for(let i = 0; i < classData.length; i++) {
         const currentClass = classData[i];
-        await this.getClassStudents(page, currentClass);
 
+        await this.getClassStudents(page, currentClass);
         currentClass.students.forEach(student => student.grades = gradesData);
 
         const record = SchoolClassRecordMapper.toDomain(classData[i]);
@@ -106,7 +105,6 @@ export class WebScrappingService {
 
   private async listClasses(page: puppeteer.Page): Promise<SchoolClassRecordDataTransfer[]> {
     const deferred = getDeferred<SchoolClassRecordDataTransfer[]>();
-
     const captureClasses = async (response: puppeteer.HTTPResponse) => {
       const request = response.request();
       const url = request.url();
@@ -129,7 +127,6 @@ export class WebScrappingService {
     };
 
     page.on('response', captureClasses);
-
     await page.goto(PortalUrls.ClassList);
     await page.waitForNetworkIdle();
 
@@ -150,7 +147,6 @@ export class WebScrappingService {
     classData: SchoolClassRecordDataTransfer,
   ): Promise<void> {
     const deferred = getDeferred<void>();
-
     const captureStudents = async (response: puppeteer.HTTPResponse) => {
       const request = response.request();
       const url = request.url();
@@ -172,7 +168,6 @@ export class WebScrappingService {
 
     page.on('response', captureStudents);
     const studentListUrl = PortalUrls.StudentListByClass.replace('{id}', classData._id)
-    console.log('list students', studentListUrl)
     await page.goto(studentListUrl);
     await page.waitForNetworkIdle();
 

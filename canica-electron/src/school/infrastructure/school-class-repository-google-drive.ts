@@ -191,11 +191,57 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
       }
     });
 
-    if (result.status !== 200) {
+    const startRowIndex = 1, endRowIndex = schoolClass.students.length + 1;
+    const startColumnIndex = 2, endColumnIndex = schoolClass.students[0].grades.length + 2;
+    const gradeList = schoolClass.students[0].grades;
+    const gradeOptions = gradeList[0].options;
+    const format = await this.googleSheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [
+          // Add notes for grade codes
+          {
+            updateCells: {
+              range: {
+                startRowIndex: 0, endRowIndex: 1,
+                startColumnIndex, endColumnIndex,
+              },
+              rows: [
+                { values: gradesList.map(g => ({ note: g.name })) },
+              ],
+              fields: "note",
+            }
+          },
+          // Create dropdows for grade options
+          {
+            setDataValidation: {
+              range: {
+                startRowIndex,
+                endRowIndex,
+                startColumnIndex,
+                endColumnIndex,
+              },
+              rule: {
+                condition: {
+                  type: 'ONE_OF_LIST',
+                  values: gradeOptions.map((go) => ({ userEnteredValue: go }))
+                  
+                },
+                showCustomUi: true,
+                strict: true
+              }
+            }
+          }
+        ]
+      }
+    })
+
+    if (result.status !== 200 || format.status !== 200) {
       // TODO: proper error type & payload
+      const source = result.status !== 200 ? result : format;
       emitEvent({
         type: 'GoogleError',
-        payload: `Error saving class data ${result.statusText}`,
+        payload: `Error saving class data ${source.statusText}`,
       });
     }
   }

@@ -24,6 +24,7 @@
       importButton.addEventListener('click', function () {
         canica.dispatchCommand({
           type: 'import-data',
+          payload: { debug: true },
         })
       });
 
