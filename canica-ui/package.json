@@ -25,7 +25,10 @@
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "types-reset": "rm src/types.ts & touch src/types.ts",
+    "types-build": "find ../canica-electron/src -name index.ts | grep data-transfer | xargs -0 sh -c 'for filename; do cat $filename >> src/types.ts; done' sh",
+    "types": "npm run types-reset && npm run types-build"
   },
   "eslintConfig": {
     "extends": "react-app"
