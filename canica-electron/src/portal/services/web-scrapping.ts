@@ -3,25 +3,57 @@ import * as pie from 'puppeteer-in-electron';
 import * as puppeteer from 'puppeteer-core';
 import { Injectable } from 'annotatron';
 import { DomainEventsBus } from '@common/domain';
-import { GradeRecordDataTransfer, SchoolClassRecordDataTransfer } from '../data-transfer';
+import { GradeRecordDataTransfer, SchoolClassRecordDataTransfer, StudentRecordDataTransfer } from '../data-transfer';
 import { SchoolClassRecordMapper } from '../mappers/school-class-record-mapper';
 import { GRADES_LIST, GRADE_OPTIONS } from './_fixtures/grades-data';
+
+
+type ClassListResponse = {
+  list: {
+    id: number,
+    grup: {
+      codi: string;
+      nom: string;
+      cursEscolar: string;
+    }
+  }[];
+}
+
+type StudentDetail = {
+  perfilAlumne: {
+    idRALC: number;
+    nomComplert: string;
+  }
+};
+type StudentListResponse = StudentDetail[];
+
+type PromiseCallback = (valOrError: unknown) => void;
+const getDeferred = <T>() => {
+  const deferred = {
+    resolve: null as PromiseCallback,
+    reject: null as PromiseCallback,
+    promise: null as Promise<T>,
+  };
+
+  deferred.promise = new Promise<T>((res, rej) => {
+    deferred.resolve = res;
+    deferred.reject = rej;
+  });
+
+  return deferred;
+}
 
 // TODO: to be removed & passed by the user
 const username = process.env.PLATFORM_USERNAME;
 const password = process.env.PLATFORM_PASSWORD;
 
-const enum PortalUrls {
-  Login = 'https://bfgh.aplicacions.ensenyament.gencat.cat/bfgh/',
-  ClassListBySubject = 'https://bfgh.aplicacions.ensenyament.gencat.cat/bfgh/avaluacio/parcialAvaluacioGrupMateria',
-  ClassListByGroup = 'https://bfgh.aplicacions.ensenyament.gencat.cat/bfgh/avaluacio/parcialAvaluacioGrupAlumne',
-}
-
-const enum PortalSelectors {
-  ClassTableSelector = '[data-st-table="vm.display_parcialAvaluacioGrupMaterias"] tbody',
-  ClassTableRowSelector = '[data-st-table="vm.display_parcialAvaluacioGrupMaterias"] tbody tr',
-  StudentsTableRowSelector = '[data-st-table="vm.dummyStudents"] tbody tr',
-  GradesTableRowSelector = 'table.grades-table > tbody > tr > td > div > div',
+const BASE_URL = 'https://bfgh.aplicacions.ensenyament.gencat.cat/bfgh';
+const PortalUrls = {
+  Login : BASE_URL,
+  ClassList : `${BASE_URL}/avaluacio/parcialAvaluacioGrupAlumne`,
+  StudentListByClass : `${BASE_URL}/avaluacio/parcialAvaluacioGrupAlumne#/parcialAvaluacioGrupAlumne/{id}`,
+  ClassListFetch : 'services/SessioAvaluacioParcialController/listGrupsClasseGrupAlumne',
+  StudentListFetch : 'services/QualificacioFinalDTOServiceController/cerca/alumnes?avaluacio=parcial&idGrupClasse=',
 }
 
 interface Credentials { username: string, password: string }
@@ -35,13 +67,11 @@ export class WebScrappingService {
       .then(() => pie.connect(app,puppeteer));
   }
 
-  async execute(): Promise<void> {
+  async execute(options = { debug: false }): Promise<void> {
     const webPreferences = { session: session.fromPartition('scrapper') }
     const browser = await this.browserPromise;
-    const window  = new BrowserWindow({ webPreferences });
+    const window  = new BrowserWindow({ show: options.debug, webPreferences });
     const page = await pie.getPage(browser, window);
-
-    window.webContents.openDevTools();
 
     try {
       await this.login(page, { username, password });
@@ -50,7 +80,7 @@ export class WebScrappingService {
 
       for(let i = 0; i < classData.length; i++) {
         const currentClass = classData[i];
-        await this.getClassStudents(page, currentClass, i + 1);
+        await this.getClassStudents(page, currentClass);
 
         currentClass.students.forEach(student => student.grades = gradesData);
 
@@ -75,20 +105,35 @@ export class WebScrappingService {
   }
 
   private async listClasses(page: puppeteer.Page): Promise<SchoolClassRecordDataTransfer[]> {
-    const classRowSelector = PortalSelectors.ClassTableRowSelector;
+    const deferred = getDeferred<SchoolClassRecordDataTransfer[]>();
 
-    await page.goto(PortalUrls.ClassListByGroup);
+    const captureClasses = async (response: puppeteer.HTTPResponse) => {
+      const request = response.request();
+      const url = request.url();
+      if (response.ok && url.endsWith(PortalUrls.ClassListFetch)) {
+        const data = await response.json() as ClassListResponse;
+        const classRecods: SchoolClassRecordDataTransfer[] = [];
+
+        data.list.forEach((item) => {
+          classRecods.push({
+            _id: item.id.toString(),
+            year: item.grup.cursEscolar,
+            label: item.grup.nom,
+            students: [],
+          })
+        });
+
+        page.off('response', captureClasses);
+        deferred.resolve(classRecods);
+      }
+    };
+
+    page.on('response', captureClasses);
+
+    await page.goto(PortalUrls.ClassList);
     await page.waitForNetworkIdle();
-    await page.waitForSelector(classRowSelector);
-    
-    const records = await page.$$eval(classRowSelector, (rows) => rows.map(tr => ({
-      _id: (tr.querySelector('td:nth-child(3)') as HTMLTableCellElement).innerText,
-      year: (tr.querySelector('td:nth-child(2)') as HTMLTableCellElement).innerText,
-      label: (tr.querySelector('td:nth-child(4)') as HTMLTableCellElement).innerText,
-      students: [],
-    })));
 
-    return records;
+    return deferred.promise;
   }
 
   // TODO: static for now since is unlikely to cange
@@ -103,31 +148,34 @@ export class WebScrappingService {
   private async getClassStudents(
     page: puppeteer.Page,
     classData: SchoolClassRecordDataTransfer,
-    index: number,
   ): Promise<void> {
-    // TODO: refactor to goToStudentsList
-    const tableSelector = PortalSelectors.ClassTableRowSelector;
-    const linkSelector = `${tableSelector}:nth-child(${index}) a`;
-    const studentsSelector = PortalSelectors.StudentsTableRowSelector;
+    const deferred = getDeferred<void>();
 
-    await page.click(linkSelector);
-    await page.waitForSelector(studentsSelector);
+    const captureStudents = async (response: puppeteer.HTTPResponse) => {
+      const request = response.request();
+      const url = request.url();
+      if (response.ok && url.indexOf(PortalUrls.StudentListFetch) !== -1) {
+        const data = await response.json() as StudentListResponse;
+
+        data.forEach((item) => {
+          classData.students.push({
+            code: item.perfilAlumne.idRALC.toString(),
+            name: item.perfilAlumne.nomComplert,
+            grades: [],
+          });
+        });
+
+        page.off('response', captureStudents);
+        deferred.resolve(void 0);
+      }
+    };
+
+    page.on('response', captureStudents);
+    const studentListUrl = PortalUrls.StudentListByClass.replace('{id}', classData._id)
+    console.log('list students', studentListUrl)
+    await page.goto(studentListUrl);
     await page.waitForNetworkIdle();
 
-    const studentData = await page.$$eval(`${studentsSelector}`, (rows) => rows.map(tr => ({
-      code: (tr.querySelector('td:nth-child(1)') as HTMLTableCellElement).innerText,
-      name: (tr.querySelector('td:nth-child(2)') as HTMLTableCellElement).innerText,
-      grades: [],
-    })));
-
-    classData.students.push(...studentData);
-
-    await this.goToClassList(page);
-  }
-
-  private async goToClassList(page: puppeteer.Page): Promise<void> {
-    await page.goto(PortalUrls.ClassListByGroup);
-    await page.waitForNetworkIdle();
-    await page.waitForSelector(PortalSelectors.ClassTableRowSelector);
+    return deferred.promise;
   }
 }

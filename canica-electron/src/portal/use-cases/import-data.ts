@@ -12,9 +12,7 @@ export class ImportDataUseCase implements UseCase<ImportDataCommand, ImportDataR
   async execute(request: ImportDataCommand): Promise<ImportDataResult> {
     // TODO: call service to import data (classes with students)
 
-    console.log('importing data!!!!', request)
-
-    await this.webScrappingService.execute();
+    await this.webScrappingService.execute({ debug: request.debug });
 
     return { type: 'import-data' };
   }
