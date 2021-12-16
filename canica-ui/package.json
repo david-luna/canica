@@ -26,8 +26,10 @@
     "build": "craco build",
     "test": "craco test",
     "eject": "react-scripts eject",
-    "types-reset": "rm src/types.ts & touch src/types.ts",
-    "types-build": "find ../canica-electron/src -name index.ts | grep data-transfer | xargs -0 sh -c 'for filename; do cat $filename >> src/types.ts; done' sh",
+    "types-reset": "cd ./src/backend/types && rm dtos.ts commands.ts || true",
+    "types-commands": "find ../canica-electron/src -name commands.ts | xargs -0 sh -c 'for filename; do cat $filename >> src/backend/types/commands.ts; done' sh",
+    "types-data": "find ../canica-electron/src -name index.ts | grep data-transfer | xargs -0 sh -c 'for filename; do cat $filename >> src/backend/types/dtos.ts; done' sh",
+    "types-build" : "npm run types-commands && npm run types-data",
     "types": "npm run types-reset && npm run types-build"
   },
   "eslintConfig": {
