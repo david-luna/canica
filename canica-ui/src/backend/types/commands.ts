@@ -1,5 +1,6 @@
-
-export type ImportDataType = 'import-data';
+export enum PortalCommandTypes {
+  ImportData = 'import-data',
+}
 
 export interface ImportDataCommand {
   username: string;
@@ -8,20 +9,17 @@ export interface ImportDataCommand {
 }
 
 export interface ImportDataResult {
-  type: ImportDataType;
+  type: PortalCommandTypes.ImportData;
 }
 
-export enum CommandTypes {
-  ImportData = 'import-data',
+export enum AuthCommandTypes {
+  Login = 'login',
 }
-
-export type LoginCommandType = 'login';
-export type LoginCommandVendor = 'google'; // TODO: maybe others?
 
 export interface LoginCommand {
-  vendor: LoginCommandVendor;
+  vendor: 'google'; // TODO: maybe others?
 }
 
 export interface LoginResult {
-  type: LoginCommandType;
+  type: AuthCommandTypes.Login;
 }

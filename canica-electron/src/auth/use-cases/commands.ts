@@ -1,11 +1,11 @@
-
-export type LoginCommandType = 'login';
-export type LoginCommandVendor = 'google'; // TODO: maybe others?
+export enum AuthCommandTypes {
+  Login = 'login',
+}
 
 export interface LoginCommand {
-  vendor: LoginCommandVendor;
+  vendor: 'google'; // TODO: maybe others?
 }
 
 export interface LoginResult {
-  type: LoginCommandType;
+  type: AuthCommandTypes.Login;
 }
