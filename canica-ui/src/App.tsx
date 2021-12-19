@@ -1,57 +1,33 @@
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
-import './App.less';
+// import logo from './logo.svg';
+// import { Counter } from './features/counter/Counter';
+// import './App.less';
+
+// import { useState } from 'react';
+import { useAppSelector } from './app/hooks';
+import Files from './app/pages/files';
+import { Login } from './app/pages/login';
+import { selectUser } from './app/store/auth/slice';
+
+
+// function routeComponent (route: string) {
+//   switch(route) {
+//     case 'login':
+//       return (<Login></Login>);
+//     case 'files':
+//       return (<Files></Files>);
+//   }
+//   return null;
+// };
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
-    </div>
-  );
+  // TODO: ceck hhot to connect state to the router
+  // const [routeState, setRouteState] = useState('files');
+
+  const user = useAppSelector(selectUser);
+
+  
+  // return (routeComponent(routeState));
+  return (user ? <Files></Files> : <Login></Login>);
 }
 
 export default App;

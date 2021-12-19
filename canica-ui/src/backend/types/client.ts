@@ -1,6 +1,6 @@
-export interface CommandQueryEvent {
+export interface CommandQueryEvent<T> {
   type: string;
-  payload: unknown;
+  payload: T;
 }
 
 export interface Subscription {
@@ -12,7 +12,7 @@ export interface Observable<T> {
 }
 
 export interface BackendClient {
-  dispatchCommand: (command: CommandQueryEvent) => void;
-  dispatchQuery: (query: CommandQueryEvent) => void;
-  events$: Observable<CommandQueryEvent>;
+  dispatchCommand: (command: CommandQueryEvent<unknown>) => void;
+  dispatchQuery: (query: CommandQueryEvent<unknown>) => void;
+  events$: Observable<CommandQueryEvent<any>>;
 }

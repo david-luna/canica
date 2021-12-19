@@ -10,8 +10,11 @@ export class LoginUseCase implements UseCase<LoginCommand, LoginResult> {
 
   @Command(AuthCommandTypes.Login)
   async execute(/*request: LoginCommand*/): Promise<LoginResult> {
-    await this.googleAuth.login();
+    const { name, email } = await this.googleAuth.login();
 
-    return { type: AuthCommandTypes.Login };
+    return {
+      type: AuthCommandTypes.Login,
+      payload: { name, email },
+    };
   }
 }

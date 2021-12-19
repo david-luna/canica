@@ -1,7 +1,11 @@
-import { CommandQueryEvent } from './types';
+import { AuthCommandTypes, CommandQueryEvent } from './types';
 
-type MockMessage = (meesage: CommandQueryEvent) => Promise<CommandQueryEvent>;
-
-export const mocks: Record<string,any> = {
-
+export const mocks: Record<string, CommandQueryEvent<any>> = {
+  'login': {
+    type: AuthCommandTypes.Login,
+    payload: {
+      name: 'Teacher Name',
+      email: 'teacher@scool.com'
+    },
+  },
 };
