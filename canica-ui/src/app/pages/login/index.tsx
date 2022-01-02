@@ -1,19 +1,21 @@
 import { Fragment } from 'react';
 import { Button, Row, Input, Form } from 'antd'
 
-import { useAppDispatch } from '../../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 
 
 import './index.less';
 import { loginAsync } from '../../store/auth/thunks';
+import { selectAuthStatus } from '../../store/auth/slice';
 
 const FormItem = Form.Item;
 
 export function Login() {
   const dispatch = useAppDispatch();
+  const status = useAppSelector(selectAuthStatus);
+  
 
   const handleSubmit = (values: any) => {
-    console.log('handlesubmit')
     dispatch(loginAsync());
   };
 

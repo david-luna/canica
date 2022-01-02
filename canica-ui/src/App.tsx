@@ -1,33 +1,42 @@
-// import logo from './logo.svg';
-// import { Counter } from './features/counter/Counter';
-// import './App.less';
+import { Layout, Menu } from 'antd'
+import { Content, Footer, Header } from 'antd/lib/layout/layout';
 
-// import { useState } from 'react';
 import { useAppSelector } from './app/hooks';
-import Files from './app/pages/files';
+import { Files } from './app/pages/files';
 import { Login } from './app/pages/login';
-import { selectUser } from './app/store/auth/slice';
+import { Setup } from './app/pages/setup';
+import { selectRoute } from './app/store/navigation/slice';
+import { AppRoutes } from './routes';
 
+function routePage(route: AppRoutes): JSX.Element | null {
+  const mapping: Record<AppRoutes, JSX.Element | null> = {
+    [AppRoutes.Setup]: <Setup></Setup>,
+    [AppRoutes.Login]: <Login></Login>,
+    [AppRoutes.Import]: null,
+    [AppRoutes.Files]: <Files></Files>,
+  }
 
-// function routeComponent (route: string) {
-//   switch(route) {
-//     case 'login':
-//       return (<Login></Login>);
-//     case 'files':
-//       return (<Files></Files>);
-//   }
-//   return null;
-// };
+  return (mapping[route] || null); // TODO: 404 page
+}
 
 function App() {
-  // TODO: ceck hhot to connect state to the router
-  // const [routeState, setRouteState] = useState('files');
+  const route = useAppSelector(selectRoute);
+  const doLogout = () => {};
 
-  const user = useAppSelector(selectUser);
-
-  
-  // return (routeComponent(routeState));
-  return (user ? <Files></Files> : <Login></Login>);
+  return (
+    <Layout>
+      <Header style={{ position: 'fixed', zIndex: 1, width: '100%' }}>
+        <div className="logo" />
+        <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['2']}>
+          <Menu.Item key="1" onClick={doLogout}>Logout</Menu.Item>
+        </Menu>
+      </Header>
+      <Content className="site-layout" style={{ padding: '0 50px', marginTop: 64 }}>
+        {routePage(route)}
+      </Content>
+      <Footer style={{ textAlign: 'center' }}>xxx</Footer>
+    </Layout>
+  );
 }
 
 export default App;

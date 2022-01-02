@@ -52,6 +52,6 @@ export { loginAsync } from './thunks';
 // the state. Selectors can also be defined inline where they're used instead of
 // in the slice file.
 export const selectUser = (state: RootState) => state.auth.user;
-export const selectStatus = (state: RootState) => state.auth.status;
+export const selectAuthStatus = (state: RootState) => state.auth.status;
 
 export default authSlice.reducer;
