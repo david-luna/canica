@@ -8,11 +8,13 @@ export interface User {
 }
 
 export interface AuthState {
+  hasConfig: boolean;
   status: 'idle' | 'loading' | 'complete' | 'error';
   user: User | void;
 }
 
 const initialState: AuthState = {
+  hasConfig: false,
   status: 'idle',
   user: void 0,
 };

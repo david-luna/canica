@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { AuthCommandTypes, backend, CommandQueryEvent, LoginCommand, LoginResultPayload } from '../../../backend';
+import { AuthCommandTypes, AuthQueryTypes, backend, CheckConfigQuery, CheckConfigResultPayload, CommandQueryEvent, LoginCommand, LoginResultPayload } from '../../../backend';
 
 
 // The function below is called a thunk and allows us to perform async logic. It
@@ -7,17 +7,42 @@ import { AuthCommandTypes, backend, CommandQueryEvent, LoginCommand, LoginResult
 // will call the thunk with the `dispatch` function as the first argument. Async
 // code can then be executed and other actions can be dispatched. Thunks are
 // typically used to make async requests.
+export const checkConficAsync = createAsyncThunk(
+  'auth/checkconfig',
+ async () => {
+  console.log('login async thunk!!!');
+  const payload: CheckConfigQuery = {};
+  backend.dispatchCommand({ type: AuthQueryTypes.CheckConfig, payload });
+
+  return new Promise<CheckConfigResultPayload>((resolve, reject) => {
+    const subscription = backend.events$
+      .subscribe((event: CommandQueryEvent<CheckConfigResultPayload>) => {
+        console.log('login thunk receiving message!!!', event)
+        if (event.type === AuthQueryTypes.CheckConfig) {
+          if (event.payload.success) {
+            resolve(event.payload);
+          } else {
+            reject(event.payload.message);
+          }
+          subscription.unsubscribe();
+        }
+      });
+  });
+ }
+);
+
+
 export const loginAsync = createAsyncThunk(
   'auth/login',
   async () => {
-    console.log('async thunk!!!');
+    console.log('login async thunk!!!');
     const payload: LoginCommand = { vendor: 'google' };
     backend.dispatchCommand({ type: AuthCommandTypes.Login, payload });
     
     return new Promise<LoginResultPayload>((resolve, reject) => {
       const subscription = backend.events$
         .subscribe((event: CommandQueryEvent<LoginResultPayload>) => {
-          console.log('thunk receiving message!!!', event)
+          console.log('login thunk receiving message!!!', event)
           if (event.type === AuthCommandTypes.Login) {
             if (event.payload.name) {
               resolve(event.payload);
