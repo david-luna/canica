@@ -1,6 +1,7 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { SetConfigCommand } from '../../../backend';
 import { RootState } from '../../store';
-import { loginAsync } from './thunks';
+import { checkConfigAsync, loginAsync } from './thunks';
 
 export interface User {
   name: string;
@@ -8,13 +9,15 @@ export interface User {
 }
 
 export interface AuthState {
-  hasConfig: boolean;
+  hasConfig: boolean | void;
+  error: string;
   status: 'idle' | 'loading' | 'complete' | 'error';
   user: User | void;
 }
 
 const initialState: AuthState = {
-  hasConfig: false,
+  hasConfig: void 0,
+  error: '',
   status: 'idle',
   user: void 0,
 };
@@ -25,6 +28,17 @@ export const authSlice = createSlice({
   initialState,
   // The `reducers` field lets us define reducers and generate associated actions
   reducers: {
+    setConfig: (state, action: PayloadAction<SetConfigCommand>) => {
+      state.status = 'loading';
+    },
+    setConfigSuccess: (state) => {
+      state.status = 'idle';
+      state.hasConfig = true;
+    },
+    setConfigError: (state) => {
+      state.status = 'error';
+      // TODO: error message?
+    },
     logout: (state) => {
       state.user = void 0;
     },
@@ -44,16 +58,30 @@ export const authSlice = createSlice({
         state.status = 'error';
         state.user = void 0;
       });
+
+    builder
+      .addCase(checkConfigAsync.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(checkConfigAsync.fulfilled, (state, action) => {
+        state.status = 'complete';
+        state.hasConfig = action.payload.success;
+      })
+      .addCase(checkConfigAsync.rejected, (state, action) => {
+        state.status = 'error';
+        state.hasConfig = false;
+      });
   },
 });
 
-export const { logout } = authSlice.actions;
-export { loginAsync } from './thunks';
+export const AuthActions = authSlice.actions;
 
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of
 // in the slice file.
 export const selectUser = (state: RootState) => state.auth.user;
 export const selectAuthStatus = (state: RootState) => state.auth.status;
+export const selectAuthError = (state: RootState) => state.auth.error;
+export const selectAuthHasConfig = (state: RootState) => state.auth.hasConfig;
 
 export default authSlice.reducer;

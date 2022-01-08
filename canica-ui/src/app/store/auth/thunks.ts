@@ -1,5 +1,23 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { AuthCommandTypes, AuthQueryTypes, backend, CheckConfigQuery, CheckConfigResultPayload, CommandQueryEvent, LoginCommand, LoginResultPayload } from '../../../backend';
+import {
+  AuthCommandTypes,
+  AuthQueryTypes,
+  backend,
+  CheckConfigQuery,
+  CheckConfigResultPayload,
+  CommandQueryEvent,
+  LoginCommand,
+  LoginResultPayload
+} from '../../../backend';
+
+const once = <T>(type: string, handler:(event: CommandQueryEvent<T>) => void): void => {
+  const subscription = backend.events$.subscribe((event) => {
+    if (event.type === type) {
+      handler(event);
+      subscription.unsubscribe();
+    }
+  });
+};
 
 
 // The function below is called a thunk and allows us to perform async logic. It
@@ -7,30 +25,24 @@ import { AuthCommandTypes, AuthQueryTypes, backend, CheckConfigQuery, CheckConfi
 // will call the thunk with the `dispatch` function as the first argument. Async
 // code can then be executed and other actions can be dispatched. Thunks are
 // typically used to make async requests.
-export const checkConficAsync = createAsyncThunk(
+export const checkConfigAsync = createAsyncThunk(
   'auth/checkconfig',
- async () => {
-  console.log('login async thunk!!!');
-  const payload: CheckConfigQuery = {};
-  backend.dispatchCommand({ type: AuthQueryTypes.CheckConfig, payload });
+  async () => {
+    console.log('check async thunk!!!');
+    const payload: CheckConfigQuery = {};
+    backend.dispatchCommand({ type: AuthQueryTypes.CheckConfig, payload });
 
-  return new Promise<CheckConfigResultPayload>((resolve, reject) => {
-    const subscription = backend.events$
-      .subscribe((event: CommandQueryEvent<CheckConfigResultPayload>) => {
-        console.log('login thunk receiving message!!!', event)
-        if (event.type === AuthQueryTypes.CheckConfig) {
-          if (event.payload.success) {
-            resolve(event.payload);
-          } else {
-            reject(event.payload.message);
-          }
-          subscription.unsubscribe();
+    return new Promise<CheckConfigResultPayload>((resolve, reject) => {
+      once<CheckConfigResultPayload>(AuthQueryTypes.CheckConfig, (event) => {
+        if (event.payload.success) {
+          resolve(event.payload);
+        } else {
+          reject(event.payload.message);
         }
       });
-  });
- }
+    });
+  },
 );
-
 
 export const loginAsync = createAsyncThunk(
   'auth/login',
@@ -40,18 +52,13 @@ export const loginAsync = createAsyncThunk(
     backend.dispatchCommand({ type: AuthCommandTypes.Login, payload });
     
     return new Promise<LoginResultPayload>((resolve, reject) => {
-      const subscription = backend.events$
-        .subscribe((event: CommandQueryEvent<LoginResultPayload>) => {
-          console.log('login thunk receiving message!!!', event)
-          if (event.type === AuthCommandTypes.Login) {
-            if (event.payload.name) {
-              resolve(event.payload);
-            } else {
-              reject(event.payload);
-            }
-            subscription.unsubscribe();
-          }
-        });
+      once<LoginResultPayload>(AuthCommandTypes.Login, (event) => {
+        if (event.payload.name) {
+          resolve(event.payload);
+        } else {
+          reject(event.payload);
+        }
+      });
     });
   }
 );
