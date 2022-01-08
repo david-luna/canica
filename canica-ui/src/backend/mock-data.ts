@@ -4,7 +4,8 @@ export const mocks: Record<string, CommandQueryEvent<any>> = {
   'checkconfig': {
     type: AuthQueryTypes.CheckConfig,
     payload: {
-      success: false,
+      success: true,
+      hasConfig: true,
       message: 'not configured'
     },
   },
