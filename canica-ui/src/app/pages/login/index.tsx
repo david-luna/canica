@@ -63,9 +63,6 @@ export function Login() {
         </Row>
       </Form>
     </div>
-    <div className="footer">
-      Footer comes here
-    </div>
     </Fragment>
   );
 }
