@@ -15,15 +15,17 @@ const notifySubscriptions = (event: CommandQueryEvent<any>) => {
   });
 };
 
+const dispatch = (commandOrQuery: { type: string, payload: any }): void => {
+  const { type } = commandOrQuery;
+  const wrapper = mocks[type];
+  const payload = wrapper.payloads[wrapper.index];
+
+  setTimeout(() => notifySubscriptions({ type, payload }), delay);
+}
+
 export const mockBackend: BackendClient = {
-  dispatchCommand(command): void {
-    console.log('dispatching command', command);
-    setTimeout(() => notifySubscriptions(mocks[command.type]), delay);
-  },
-  dispatchQuery(query): void {
-    console.log('dispatching query', query);
-    setTimeout(() => notifySubscriptions(mocks[query.type]), delay);
-  },
+  dispatchCommand: dispatch,
+  dispatchQuery: dispatch,
   events$: {
     subscribe(handler) {
       handlers.push(handler);

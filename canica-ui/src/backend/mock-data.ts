@@ -1,25 +1,30 @@
-import { AuthCommandTypes, AuthQueryTypes, CommandQueryEvent } from './types';
+import { AuthCommandTypes, AuthQueryTypes } from './types';
 
-export const mocks: Record<string, CommandQueryEvent<any>> = {
-  'checkconfig': {
-    type: AuthQueryTypes.CheckConfig,
-    payload: {
-      success: true,
-      hasConfig: true,
-      message: 'not configured'
-    },
+interface ResponseWrapper {
+  index: number;
+  payloads: any[];
+}
+
+export const mocks: Record<string, ResponseWrapper> = {
+  [AuthQueryTypes.CheckConfig]: {
+    index: 0,
+    payloads: [
+      { success: true },
+      { success: false, message: 'not configured' },
+    ]
   },
-  'setconfig': {
-    type: AuthCommandTypes.SetConfig,
-    payload: {
-      success: true,
-    },
+  [AuthCommandTypes.SetConfig]: {
+    index: 0,
+    payloads: [
+      { success: true },
+      { success: false },
+    ]
   },
-  'login': {
-    type: AuthCommandTypes.Login,
-    payload: {
-      name: 'Teacher Name',
-      email: 'teacher@scool.com'
-    },
+  [AuthCommandTypes.Login]: {
+    index: 0,
+    payloads: [
+      { success: true, name: 'Teacher Name', email: 'teacher@scool.com' },
+      { success: false, message: 'Invalid credentials' },
+    ]
   },
 };

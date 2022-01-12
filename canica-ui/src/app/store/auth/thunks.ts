@@ -4,10 +4,10 @@ import {
   AuthQueryTypes,
   backend,
   CheckConfigQuery,
-  CheckConfigResultPayload,
+  CheckConfigResult,
   CommandQueryEvent,
   LoginCommand,
-  LoginResultPayload
+  LoginResult,
 } from '../../../backend';
 
 const once = <T>(type: string, handler:(event: CommandQueryEvent<T>) => void): void => {
@@ -32,13 +32,12 @@ export const checkConfigAsync = createAsyncThunk(
     const payload: CheckConfigQuery = {};
     backend.dispatchCommand({ type: AuthQueryTypes.CheckConfig, payload });
 
-    return new Promise<CheckConfigResultPayload>((resolve, reject) => {
-      once<CheckConfigResultPayload>(AuthQueryTypes.CheckConfig, (event) => {
-        if (event.payload.success) {
-          resolve(event.payload);
-        } else {
-          reject(event.payload.message);
-        }
+    return new Promise<any>((resolve, reject) => {
+      once<CheckConfigResult['payload']>(AuthQueryTypes.CheckConfig, (event) => {
+        const { payload } = event;
+        const callback = payload.success ? resolve : reject;
+
+        callback(payload);
       });
     });
   },
@@ -51,13 +50,12 @@ export const loginAsync = createAsyncThunk(
     const payload: LoginCommand = { vendor: 'google' };
     backend.dispatchCommand({ type: AuthCommandTypes.Login, payload });
     
-    return new Promise<LoginResultPayload>((resolve, reject) => {
-      once<LoginResultPayload>(AuthCommandTypes.Login, (event) => {
-        if (event.payload.name) {
-          resolve(event.payload);
-        } else {
-          reject(event.payload);
-        }
+    return new Promise<any>((resolve, reject) => {
+      once<LoginResult['payload']>(AuthCommandTypes.Login, (event) => {
+        const { payload } = event;
+        const callback = payload.success ? resolve : reject;
+
+        callback(payload);
       });
     });
   }
