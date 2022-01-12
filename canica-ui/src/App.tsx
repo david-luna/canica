@@ -13,11 +13,10 @@ import { Login } from './app/pages/login';
 import { Setup } from './app/pages/setup';
 import { selectRoute } from './app/store/navigation/slice';
 import { AppRoutes } from './routes';
-import React from 'react';
 
 import './App.less';
 
-const { Header, Content } = Layout;
+const { Content } = Layout;
 
 function routePage(route: AppRoutes): JSX.Element | null {
   const mapping: Record<AppRoutes, JSX.Element | null> = {
@@ -32,15 +31,13 @@ function routePage(route: AppRoutes): JSX.Element | null {
 
 function App() {
   const route = useAppSelector(selectRoute);
-  const [collapsed, setCollapsed] = useState(false);
   const isLoggedIn = [AppRoutes.Setup, AppRoutes.Login].indexOf(route) === -1;
-
-  const toggleSider = () => setCollapsed(!collapsed);
+  // const [collapsed, setCollapsed] = useState(false);
+  // const toggleSider = () => setCollapsed(!collapsed);
 
   return (
     <Layout>
-      {isLoggedIn ? <AppSider collapsed={collapsed}></AppSider> : null}
-
+      {isLoggedIn ? <AppSider collapsed={false}></AppSider> : null}
       <Layout className="site-layout">
         {isLoggedIn ? <AppHeader></AppHeader> : null}
         <Content

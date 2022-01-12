@@ -22,11 +22,17 @@ export interface LoginCommand {
   vendor: 'google'; // TODO: maybe others?
 }
 
-export interface LoginResultPayload {
+export interface LoginCommandSuccess {
+  success: true;
   name: string;
   email: string;
 }
+
+export interface LoginCommandFailure {
+  success: false;
+  message: string;
+}
 export interface LoginResult {
   type: AuthCommandTypes.Login;
-  payload: LoginResultPayload;
+  payload: LoginCommandSuccess | LoginCommandFailure;
 }

@@ -26,7 +26,7 @@
     "build": "craco build",
     "test": "craco test",
     "eject": "react-scripts eject",
-    "types-reset": "cd ./src/backend/types && rm dtos.ts commands.ts || true",
+    "types-reset": "cd ./src/backend/types && rm dtos.ts commands.ts queries.ts || true",
     "types-queries": "find ../canica-electron/src -name queries.ts | xargs -0 sh -c 'for filename; do cat $filename >> src/backend/types/queries.ts; done' sh",
     "types-commands": "find ../canica-electron/src -name commands.ts | xargs -0 sh -c 'for filename; do cat $filename >> src/backend/types/commands.ts; done' sh",
     "types-data": "find ../canica-electron/src -name index.ts | grep data-transfer | xargs -0 sh -c 'for filename; do cat $filename >> src/backend/types/dtos.ts; done' sh",

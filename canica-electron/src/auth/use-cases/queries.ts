@@ -6,12 +6,16 @@ export enum AuthQueryTypes {
 export interface CheckConfigQuery {
 }
 
-export interface CheckConfigResultPayload {
-  success: boolean;
-  message?: string;
+export interface CheckConfigResultSuccess {
+  success: true;
+}
+
+export interface CheckConfigResultFailure {
+  success: false;
+  message: string;
 }
 
 export interface CheckConfigResult {
   type: AuthQueryTypes.CheckConfig;
-  payload: CheckConfigResultPayload;
+  payload: CheckConfigResultSuccess | CheckConfigResultFailure;
 }
