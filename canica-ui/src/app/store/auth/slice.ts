@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { SetConfigCommand } from '../../../backend';
 import { RootState } from '../../store';
-import { checkConfigAsync, loginAsync } from './thunks';
+import { checkConfigAsync, loginAsync, setConfigAsync } from './thunks';
 
 export interface User {
   name: string;
@@ -28,17 +27,6 @@ export const authSlice = createSlice({
   initialState,
   // The `reducers` field lets us define reducers and generate associated actions
   reducers: {
-    setConfig: (state, action: PayloadAction<SetConfigCommand>) => {
-      state.status = 'loading';
-    },
-    setConfigSuccess: (state) => {
-      state.status = 'idle';
-      state.hasConfig = true;
-    },
-    setConfigError: (state) => {
-      state.status = 'error';
-      // TODO: error message?
-    },
     logout: (state) => {
       state.user = void 0;
     },
@@ -68,6 +56,18 @@ export const authSlice = createSlice({
         state.hasConfig = action.payload.success;
       })
       .addCase(checkConfigAsync.rejected, (state, action) => {
+        state.status = 'error';
+        state.hasConfig = false;
+      });
+    builder
+      .addCase(setConfigAsync.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(setConfigAsync.fulfilled, (state, action) => {
+        state.status = 'complete';
+        state.hasConfig = action.payload.success;
+      })
+      .addCase(setConfigAsync.rejected, (state, action) => {
         state.status = 'error';
         state.hasConfig = false;
       });

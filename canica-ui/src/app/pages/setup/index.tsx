@@ -2,11 +2,11 @@ import { Fragment, useEffect } from 'react';
 import { Button } from 'antd'
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { AppRoutes } from '../../../routes';
-import { AuthActions, selectAuthHasConfig, selectAuthStatus } from '../../store/auth/slice';
+import { selectAuthHasConfig, selectAuthStatus } from '../../store/auth/slice';
 import { navigate } from '../../store/navigation/slice';
 
 import './index.less';
-import { checkConfigAsync } from '../../store/auth/thunks';
+import { checkConfigAsync, setConfigAsync } from '../../store/auth/thunks';
 
 export function Setup() {
   const dispatch = useAppDispatch();
@@ -14,12 +14,11 @@ export function Setup() {
   const hasConfig = useAppSelector(selectAuthHasConfig)
 
   const handleClick = (values: any) => {
-    dispatch(AuthActions.setConfig({ client: 'xxx', secret: 'yyy' }));
+    dispatch(setConfigAsync({ client: 'xxx', secret: 'yyy' }));
   };
 
   useEffect(
     () => {
-      console.log('effect', hasConfig)
       if (typeof hasConfig === 'undefined') {
         dispatch(checkConfigAsync());
       } else if (hasConfig) {

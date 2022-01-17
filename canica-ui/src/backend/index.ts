@@ -6,10 +6,18 @@ declare global {
 
 export * from './types';
 export const backend: BackendClient = window.canica ? window.canica : mockBackend;
-export const onBackendEvent = <T>(type: string, handler: (event: CommandQueryEvent<T>) => void ): void => {
-  backend.events$.subscribe((event) => {
-    if (event.type === type) {
-      handler(event);
-    }
-  });
-};
+export const request = <T>(commandOrQuery: CommandQueryEvent<unknown>): Promise<T> => {
+    backend.dispatchCommand(commandOrQuery);
+
+    return new Promise<T>((resolve, reject) => {
+      const subscription = backend.events$.subscribe((event) => {
+        if (event.type === commandOrQuery.type) {
+          const { payload } = event;
+          const callback = payload.success ? resolve : reject;
+  
+          callback(payload);
+          subscription.unsubscribe();
+        }
+      });
+    });
+  };

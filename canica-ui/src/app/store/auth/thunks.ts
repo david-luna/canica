@@ -2,22 +2,15 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import {
   AuthCommandTypes,
   AuthQueryTypes,
-  backend,
   CheckConfigQuery,
   CheckConfigResult,
-  CommandQueryEvent,
   LoginCommand,
   LoginResult,
+  request,
+  SetConfigCommand,
+  SetConfigResult,
 } from '../../../backend';
 
-const once = <T>(type: string, handler:(event: CommandQueryEvent<T>) => void): void => {
-  const subscription = backend.events$.subscribe((event) => {
-    if (event.type === type) {
-      handler(event);
-      subscription.unsubscribe();
-    }
-  });
-};
 
 
 // The function below is called a thunk and allows us to perform async logic. It
@@ -25,38 +18,32 @@ const once = <T>(type: string, handler:(event: CommandQueryEvent<T>) => void): v
 // will call the thunk with the `dispatch` function as the first argument. Async
 // code can then be executed and other actions can be dispatched. Thunks are
 // typically used to make async requests.
-export const checkConfigAsync = createAsyncThunk(
+export const checkConfigAsync = createAsyncThunk<CheckConfigResult['payload']>(
   'auth/checkconfig',
   async () => {
-    console.log('check async thunk!!!');
+    const type = AuthQueryTypes.CheckConfig;
     const payload: CheckConfigQuery = {};
-    backend.dispatchCommand({ type: AuthQueryTypes.CheckConfig, payload });
-
-    return new Promise<any>((resolve, reject) => {
-      once<CheckConfigResult['payload']>(AuthQueryTypes.CheckConfig, (event) => {
-        const { payload } = event;
-        const callback = payload.success ? resolve : reject;
-
-        callback(payload);
-      });
-    });
+    const result = await request<CheckConfigResult['payload']>({ type, payload });
+    return result;
   },
 );
 
-export const loginAsync = createAsyncThunk(
+export const setConfigAsync = createAsyncThunk<SetConfigResult['payload'], SetConfigCommand>(
+  'auth/setconfig',
+  async (config: SetConfigCommand) => {
+    const type = AuthCommandTypes.SetConfig;
+    const payload = config;
+    const result = await request<SetConfigResult['payload']>({ type, payload });
+    return result;
+  },
+);
+
+export const loginAsync = createAsyncThunk<LoginResult['payload']>(
   'auth/login',
   async () => {
-    console.log('login async thunk!!!');
+    const type = AuthCommandTypes.Login;
     const payload: LoginCommand = { vendor: 'google' };
-    backend.dispatchCommand({ type: AuthCommandTypes.Login, payload });
-    
-    return new Promise<any>((resolve, reject) => {
-      once<LoginResult['payload']>(AuthCommandTypes.Login, (event) => {
-        const { payload } = event;
-        const callback = payload.success ? resolve : reject;
-
-        callback(payload);
-      });
-    });
+    const result = await request<LoginResult['payload']>({ type, payload });
+    return result;
   }
 );

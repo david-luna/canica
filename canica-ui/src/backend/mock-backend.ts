@@ -21,6 +21,7 @@ const dispatch = (commandOrQuery: { type: string, payload: any }): void => {
   const payload = wrapper.payloads[wrapper.index];
 
   setTimeout(() => notifySubscriptions({ type, payload }), delay);
+  wrapper.index = (wrapper.index + 1) % wrapper.payloads.length;
 }
 
 export const mockBackend: BackendClient = {
