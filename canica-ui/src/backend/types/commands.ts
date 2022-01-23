@@ -1,5 +1,5 @@
 export enum PortalCommandTypes {
-  ImportData = 'import-data',
+  ImportData = 'importData',
 }
 
 export interface ImportDataCommand {
@@ -13,7 +13,7 @@ export interface ImportDataResult {
 }
 
 export enum AuthCommandTypes {
-  SetConfig = 'setconfig',
+  SetConfig = 'setConfig',
   Login = 'login',
 }
 

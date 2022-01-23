@@ -14,5 +14,7 @@ export interface Observable<T> {
 export interface BackendClient {
   dispatchCommand: (command: CommandQueryEvent<unknown>) => void;
   dispatchQuery: (query: CommandQueryEvent<unknown>) => void;
+  results$: Observable<CommandQueryEvent<any>>;
+  errors$: Observable<CommandQueryEvent<any>>;
   events$: Observable<CommandQueryEvent<any>>;
 }

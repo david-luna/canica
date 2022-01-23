@@ -1,5 +1,5 @@
 export enum PortalCommandTypes {
-  ImportData = 'import-data',
+  ImportData = 'importData',
 }
 
 export interface ImportDataCommand {

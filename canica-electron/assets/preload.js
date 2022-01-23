@@ -1,27 +1,32 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { contextBridge, ipcRenderer } = require('electron');
 
+const observableLike = (key) => {
+  return {
+    subscribe: (observer) => {
+      const ipcHandler = (evt, payload) => observer(payload);
+
+      ipcRenderer.on(`annotatron:${key}`, ipcHandler);
+      return {
+        unsubscribe: function() {
+          ipcRenderer.removeListener(`annotatron:${key}`, ipcHandler);
+        }
+      };
+    }
+  };
+};
+
+const dispatcherOf = (key) => (toSend) => {
+  ipcRenderer.send(`annotatron:${key}`, toSend);
+};
+
 contextBridge.exposeInMainWorld(
   'canica',
   {
-    dispatchCommand: (command) => ipcRenderer.send(`annotatron:commands`, command),
-    dispatchQuery: (query) => ipcRenderer.send(`annotatron:queries`, query),
-    events$: {
-      subscribe: (observer) => {
-        const ipcHandler = (evt, payload) => observer(payload);
-
-        ipcRenderer.on(`annotatron:results`, ipcHandler);
-        ipcRenderer.on(`annotatron:errors`, ipcHandler);
-        ipcRenderer.on(`annotatron:events`, ipcHandler);
-
-        return {
-          unsubscribe: function() {
-            ipcRenderer.removeListener(`annotatron:results`, ipcHandler);
-            ipcRenderer.removeListener(`annotatron:errors`, ipcHandler);
-            ipcRenderer.removeListener(`annotatron:events`, ipcHandler);
-          }
-        };
-      }
-    }
+    dispatchCommand: dispatcherOf('commands'),
+    dispatchQuery: dispatcherOf('queries'),
+    results$: observableLike('results'),
+    errors$: observableLike('errors'),
+    events$: observableLike('events'),
   }
 );

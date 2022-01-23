@@ -1,5 +1,5 @@
 export enum AuthCommandTypes {
-  SetConfig = 'setconfig',
+  SetConfig = 'setConfig',
   Login = 'login',
 }
 

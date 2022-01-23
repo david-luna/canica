@@ -6,7 +6,7 @@ import { selectAuthHasConfig, selectAuthStatus } from '../../store/auth/slice';
 import { navigate } from '../../store/navigation/slice';
 
 import './index.less';
-import { checkConfigAsync, setConfigAsync } from '../../store/auth/thunks';
+import { AuthActions } from '../../store/auth/slice';
 
 export function Setup() {
   const dispatch = useAppDispatch();
@@ -14,13 +14,13 @@ export function Setup() {
   const hasConfig = useAppSelector(selectAuthHasConfig)
 
   const handleClick = (values: any) => {
-    dispatch(setConfigAsync({ client: 'xxx', secret: 'yyy' }));
+    dispatch(AuthActions.setConfig({ client: 'xxx', secret: 'yyy' }));
   };
 
   useEffect(
     () => {
       if (typeof hasConfig === 'undefined') {
-        dispatch(checkConfigAsync());
+        dispatch(AuthActions.checkConfig());
       } else if (hasConfig) {
         dispatch(navigate(AppRoutes.Login));
       }

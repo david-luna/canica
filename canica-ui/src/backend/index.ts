@@ -14,7 +14,9 @@ export const request = <T>(commandOrQuery: CommandQueryEvent<unknown>): Promise<
         if (event.type === commandOrQuery.type) {
           const { payload } = event;
           const callback = payload.success ? resolve : reject;
-  
+          // TODO: remove success flag
+          // const { success, ...rest } = payload;
+
           callback(payload);
           subscription.unsubscribe();
         }

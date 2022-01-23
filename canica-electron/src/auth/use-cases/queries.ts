@@ -1,5 +1,5 @@
 export enum AuthQueryTypes {
-  CheckConfig = 'checkconfig',
+  CheckConfig = 'checkConfig',
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface

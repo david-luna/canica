@@ -1,11 +1,17 @@
 import { BackendClient, CommandQueryEvent } from './types';
 import { mocks } from './mock-data';
 
-const delay = 1000;
-const handlers: any[] = [];
+type BackendHandler = (e: any) => void;
 
-const notifySubscriptions = (event: CommandQueryEvent<any>) => {
-  handlers.forEach((handler) => {
+const delay = 1000;
+const handlers = {
+  results: [] as BackendHandler[],
+  errors: [] as BackendHandler[],
+  events: [] as BackendHandler[],
+};
+
+const notifyHandlers = (type: keyof typeof handlers, event: CommandQueryEvent<any>) => {
+  handlers[type].forEach((handler) => {
     try {
       console.log('Notify event', event);
       handler(event);
@@ -18,24 +24,32 @@ const notifySubscriptions = (event: CommandQueryEvent<any>) => {
 const dispatch = (commandOrQuery: { type: string, payload: any }): void => {
   const { type } = commandOrQuery;
   const wrapper = mocks[type];
-  const payload = wrapper.payloads[wrapper.index];
+  const { ok, payload } = wrapper.responses[wrapper.index];
+  const channel = ok ? 'results' : 'errors';
 
-  setTimeout(() => notifySubscriptions({ type, payload }), delay);
-  wrapper.index = (wrapper.index + 1) % wrapper.payloads.length;
+  setTimeout(() => notifyHandlers(channel, { type, payload }), delay);
+  wrapper.index = (wrapper.index + 1) % wrapper.responses.length;
 }
+
+const stream = (type: keyof typeof handlers) => {
+  const handlerList = handlers[type];
+  return {
+    subscribe(handler: BackendHandler) {
+      handlerList.push(handler);
+
+      return {
+        unsubscribe() {
+          handlerList.splice(handlerList.findIndex(handler), 1);
+        }
+      }
+    }
+  };
+};
 
 export const mockBackend: BackendClient = {
   dispatchCommand: dispatch,
   dispatchQuery: dispatch,
-  events$: {
-    subscribe(handler) {
-      handlers.push(handler);
-
-      return {
-        unsubscribe() {
-          handlers.splice(handlers.findIndex(handler), 1);
-        }
-      }
-    }
-  }
+  results$: stream('results'),
+  errors$: stream('errors'),
+  events$: stream('events'),
 };

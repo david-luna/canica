@@ -1,7 +1,7 @@
 import { SchoolClassDataTransfer } from './dtos';
 
 export enum AuthQueryTypes {
-  CheckConfig = 'checkconfig',
+  CheckConfig = 'checkConfig',
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -27,6 +27,6 @@ export interface ListSchoolClassesQuery {
 }
 
 export interface ListSchoolClassesResult {
-  type: 'list-classes';
+  type: 'listClasses';
   classes: SchoolClassDataTransfer[];
 }
