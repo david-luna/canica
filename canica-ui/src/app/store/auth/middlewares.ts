@@ -5,6 +5,8 @@ import {
   backend,
   Subscription
 } from "../../../backend";
+import { AppRoutes } from "../../../routes";
+import { navigate } from "../navigation/slice";
 import { AuthActions } from './slice';
 
 
@@ -47,8 +49,14 @@ export const authMiddleware: Middleware = (store) => {
     if (!authSubscriptions.results && !authSubscriptions.errors) {
       connectAuth(store);
     }
-    
-    // pass though actions
+
+    // Catch here navigation on login complete
+    if (action.type === 'auth/loginComplete') {
+      store.dispatch(navigate(AppRoutes.Files));
+      return;
+    }
+
+    // pass through actions
     next(action);
   };
 };

@@ -8,7 +8,7 @@ export interface NavigationState {
 }
 
 const initialState: NavigationState = {
-  route: AppRoutes.Setup,
+  route: AppRoutes.Login,
 };
 
 

@@ -13,7 +13,7 @@ const handlers = {
 const notifyHandlers = (type: keyof typeof handlers, event: CommandQueryEvent<any>) => {
   handlers[type].forEach((handler) => {
     try {
-      console.log('Notify event', event);
+      console.log(`Notify channel ${type}`, event);
       handler(event);
     } catch (handlerError) {
       console.log('App UI handler error', handlerError);
@@ -22,6 +22,7 @@ const notifyHandlers = (type: keyof typeof handlers, event: CommandQueryEvent<an
 };
 
 const dispatch = (commandOrQuery: { type: string, payload: any }): void => {
+  console.log('dispatch to backend', commandOrQuery);
   const { type } = commandOrQuery;
   const wrapper = mocks[type];
   const { ok, payload } = wrapper.responses[wrapper.index];

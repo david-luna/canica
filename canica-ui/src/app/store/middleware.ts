@@ -9,7 +9,6 @@ export type AnyGetState = AnyStore['getState'];
 const allCommandTypes = [...authCommandTypes];
 const allQueryTypes = [...authQueryTypes];
 
-
 export const backendProcessMiddleware: Middleware = (store) => {
   return next => action => {
     const commandType = allCommandTypes.find(type => action.type.endsWith(`/${type}`))
@@ -20,7 +19,7 @@ export const backendProcessMiddleware: Middleware = (store) => {
 
     const queryType = allQueryTypes.find(type => action.type.endsWith(`/${type}`))
     if (queryType) {
-      backend.dispatchCommand({ ...action, type: queryType });
+      backend.dispatchQuery({ ...action, type: queryType });
     }
     // pass through since a reduced may need it
     next(action);
