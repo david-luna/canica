@@ -1,14 +1,20 @@
 "use strict";
 
-import { app, protocol, BrowserWindow } from "electron";
+import { app, protocol, BrowserWindow, ipcMain } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS3_DEVTOOLS } from "electron-devtools-installer";
+import { bootstrapModule, connectWindow } from "annotatron";
+import { BackendModule } from "./backend/backend.module";
+
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
   { scheme: "canica", privileges: { secure: true, standard: true } },
 ]);
+
+// Bootstrap the backend module
+bootstrapModule(BackendModule, ipcMain);
 
 async function createWindow() {
   // Create the browser window.
@@ -33,6 +39,9 @@ async function createWindow() {
     // Load the index.html when not in development
     win.loadURL("canica://./index.html");
   }
+
+  // Connect window to the main thread
+  connectWindow(win);
 }
 
 // Quit when all windows are closed.
