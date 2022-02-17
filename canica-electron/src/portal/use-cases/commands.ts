@@ -1,5 +1,6 @@
-
-export type ImportDataType = 'import-data';
+export enum PortalCommandTypes {
+  ImportData = 'importData',
+}
 
 export interface ImportDataCommand {
   username: string;
@@ -8,9 +9,6 @@ export interface ImportDataCommand {
 }
 
 export interface ImportDataResult {
-  type: ImportDataType;
+  type: PortalCommandTypes.ImportData;
 }
 
-export enum CommandTypes {
-  ImportData = 'import-data',
-}

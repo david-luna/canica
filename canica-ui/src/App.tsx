@@ -1,56 +1,53 @@
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
+import { useState } from 'react';
+import { Layout } from 'antd'
+import {
+  MenuUnfoldOutlined,
+  MenuFoldOutlined,
+} from '@ant-design/icons';
+
+import { useAppSelector } from './app/hooks';
+import AppSider from './app/components/sider';
+import AppHeader from './app/components/header';
+import { Files } from './app/pages/files';
+import { Login } from './app/pages/login';
+import { selectRoute } from './app/store/navigation/slice';
+import { AppRoutes } from './routes';
+
 import './App.less';
 
+const { Content } = Layout;
+
+function routePage(route: AppRoutes): JSX.Element | null {
+  const mapping: Record<AppRoutes, JSX.Element | null> = {
+    [AppRoutes.Login]: <Login></Login>,
+    [AppRoutes.Import]: null,
+    [AppRoutes.Files]: <Files></Files>,
+  }
+
+  return (mapping[route] || null); // TODO: 404 page
+}
+
 function App() {
+  const route = useAppSelector(selectRoute);
+  const isLoggedIn = AppRoutes.Login !== route;
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
-    </div>
+    <Layout>
+      {isLoggedIn ? <AppSider collapsed={false}></AppSider> : null}
+      <Layout className="site-layout">
+        {isLoggedIn ? <AppHeader></AppHeader> : null}
+        <Content
+          className="site-layout-background"
+          style={{
+            margin: '24px 16px',
+            padding: 24,
+            minHeight: 280,
+          }}
+        >
+          {routePage(route)}
+        </Content>
+      </Layout>
+    </Layout>
   );
 }
 

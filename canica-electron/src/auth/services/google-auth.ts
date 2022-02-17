@@ -45,7 +45,7 @@ const AUTH_URL_PARAMS = {
 @Injectable()
 export class GoogleAuthService {
 
-  login(): Promise<void> {
+  login(): Promise<GoogleProfile> {
     return this.getAuthorizationCode()
       .then(code => this.fetchAccessToken(code))
       .then(tokenData => {
@@ -62,6 +62,7 @@ export class GoogleAuthService {
           name: 'profile',
           value: JSON.stringify(profile),
         });
+        return profile;
       });
   }
 
