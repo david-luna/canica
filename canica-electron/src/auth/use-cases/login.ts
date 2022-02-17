@@ -14,7 +14,7 @@ export class LoginUseCase implements UseCase<LoginCommand, LoginResult> {
 
     return {
       type: AuthCommandTypes.Login,
-      payload: { name, email },
+      payload: { success: true, name, email },
     };
   }
 }

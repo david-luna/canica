@@ -17,6 +17,7 @@ export function Login() {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.addEventListener('load', () => resolve(reader.result as string));
+      reader.addEventListener('error', (err) => reject(err));
       reader.readAsText(file);
     });
   };
