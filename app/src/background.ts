@@ -7,7 +7,7 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
-  { scheme: "app", privileges: { secure: true, standard: true } },
+  { scheme: "canica", privileges: { secure: true, standard: true } },
 ]);
 
 async function createWindow() {
@@ -29,9 +29,9 @@ async function createWindow() {
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string);
     if (!process.env.IS_TEST) win.webContents.openDevTools();
   } else {
-    createProtocol("app");
+    createProtocol("canica");
     // Load the index.html when not in development
-    win.loadURL("app://./index.html");
+    win.loadURL("canica://./index.html");
   }
 }
 
