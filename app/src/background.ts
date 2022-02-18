@@ -1,5 +1,6 @@
 "use strict";
 
+import { join } from "path";
 import { app, protocol, BrowserWindow, ipcMain } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS3_DEVTOOLS } from "electron-devtools-installer";
@@ -27,6 +28,8 @@ async function createWindow() {
       nodeIntegration: process.env
         .ELECTRON_NODE_INTEGRATION as unknown as boolean,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
+      // Preload script for communication
+      preload: join(__dirname, "../public/preload.js"),
     },
   });
 
