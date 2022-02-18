@@ -4,7 +4,7 @@
   </div>
   <div class="action-buttons">
     <button @click="googleLogin">Login!</button>
-    <button id="import-button">Import!</button>
+    <button @click="importData">Import!</button>
   </div>
 </template>
 
