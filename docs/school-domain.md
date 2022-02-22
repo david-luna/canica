@@ -2,7 +2,6 @@
 
 The goal is to have straight definitions to conform an ubiquitous language
 
-
 ## Teacher
 
 A teacher is the person who uses the app to keep track of the performance of `Students`. Each teacher is responsible of giving `Grades` of one or more `Subjects` of a certain `SchoolClass` during a `SchoolYear`.
@@ -13,7 +12,6 @@ It has the following properties:
 
 - id: string => identifier of the teacher
 - name: string => name of the teacher
-
 
 ## Student
 
@@ -27,7 +25,6 @@ It has the following properties:
 And we can do the following assertions:
 
 - A student belongs to one or many classes
-
 
 ## School Year
 
@@ -45,7 +42,6 @@ And we can do the following assertions:
 - There is no school year with the same start and end
 - All school years have the end property greater than start by one
 
-
 ## School Class <Aggregate>
 
 A `SchoolClass` is a group of `Students`.
@@ -62,7 +58,6 @@ And we can do the following assertions:
 - A school class has one or many students
 - A school class belongs to one year
 
-
 ## Subject
 
 A `Subject` is what the teacher teaches to one or many `SchoolClass`
@@ -76,39 +71,10 @@ And we can do the following assertions:
 
 - A subject can be taught in one or more classes
 
-
 ## Grade
 
 A `Grade` is the final qualification the `Teacher` gives to a `Student` for a given `Subject`. This is not an entity but rather a value of the association between `Student` and subject. The type of the value may vary depending on the context so it should be a text.
 
-
-# Domain preview
+### Domain preview
 
 ![Canica - School Domain](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.github.com/david-luna/canica/master/docs/diagrams/school-domain.puml)
-
-
-
-
-# TO REVIEW (this are technology concepts and not domain)
-## Spreadsheet
-
-A `Spreadsheet` is an entity which contains the `Grades` of
-
-- a given `SchoolClass`
-- for a given `SchoolYear`
-- and a given `Subject`
-
-This entity is materialized in a spreadsheet file inside google drive which has its own API to access it's data (more detail on implementation file).
-
-
-## Folder
-
-A `Folder` is an entity which may contain `Spreadsheets` of a given `SchoolYear`.
-
-This entity is materialized in a folder inside google drive which has its own API to access it's data (more detail on implementation file).
-
-## Drive
-
-A `Drive` is where do we place all `Folders` and `SpreadSheets`.
-
-This entity is materialized in a connection to Google's drive API (more detail on implementation file).
