@@ -2,20 +2,9 @@
 
 The goal is to have straight definitions to conform an ubiquitous language
 
-## Teacher
-
-A teacher is the person who uses the app to keep track of the performance of `Students`. Each teacher is responsible of giving `Grades` of one or more `Subjects` of a certain `SchoolClass` during a `SchoolYear`.
-
-To do so the `Teacher` will keep track of the `Students` of a certain `SchoolClass`, `Subject` and `SchoolYear` in a `Spreadsheet`.
-
-It has the following properties:
-
-- id: string => identifier of the teacher
-- name: string => name of the teacher
-
 ## Student
 
-A `Student` is the person who is under supervision of several `Teachers` who will assign his `Grades`.
+A `Student` is the person who is going to get `Grades` for different `Subjects`.
 
 It has the following properties:
 
@@ -24,7 +13,7 @@ It has the following properties:
 
 And we can do the following assertions:
 
-- A student belongs to one or many classes
+- A student belongs to one or many `SchoolClass`
 
 ## School Year
 
@@ -38,9 +27,14 @@ It has the following properties:
 
 And we can do the following assertions:
 
-- A school year has one or many classes
-- There is no school year with the same start and end
-- All school years have the end property greater than start by one
+- A `SchoolYear` has one or many classes
+- There is no `SchoolYear` with the same start and end
+- All `SchoolYear` have the end property greater than start by one
+
+## Quarter
+
+Each `SchoolYear` has three `Quarter`. In each of them the teacher gives `Grades` to
+his/her `Students`
 
 ## School Class <Aggregate>
 
@@ -49,31 +43,55 @@ A `SchoolClass` is a group of `Students`.
 It has the following properties:
 
 - id: number => unique identifier of the class
-- age: number => age (average/median) of the students of the class
 - label: string => the group label of the class
-- year: SchoolYear => the year this class belongs to
+- year: `SchoolYear` => the year this class belongs to
+- students: Collection<`Students`> => the students belonging to that `SchoolClass`
 
 And we can do the following assertions:
 
-- A school class has one or many students
-- A school class belongs to one year
+- A `SchoolClass` has one or many students
+- A `SchoolClass` belongs to one year
 
-## Subject
+## Area
 
-A `Subject` is what the teacher teaches to one or many `SchoolClass`
+A `Area` is what the teacher teaches to one or many `SchoolClass` (math, hisstory, science).
+On a given area the teacher has to evaluate on several dimensions for example in maths
+domensions are: calculus, problem solving, etc.
 
 It has the following properties:
 
-- id: number => unique id of the subject
-- name: string => the name of the subject
+- id: number => unique id of the area
+- name: string => the name of the area
 
 And we can do the following assertions:
 
-- A subject can be taught in one or more classes
+- An Area can be taught in one or many `SchoolClass`
+- An `Area` has one or many `Dimensions`
+- Each `Student` gets a grade per `Area`
+
+## Dimension
+
+A `Dimension` is one of the parts of the `Area` the `Student` gets an evaluation. Teachers has to evalueate all of them for each `Student`
+
+It has the following properties:
+
+- id: number => unique id of the dimension
+- name: string => the name of the dimension
+
+And we can do the following assertions:
+
+- An `Dimension` belongs to an `Area`
+- Each `Student` gets a grade per `Dimension`
 
 ## Grade
 
-A `Grade` is the final qualification the `Teacher` gives to a `Student` for a given `Subject`. This is not an entity but rather a value of the association between `Student` and subject. The type of the value may vary depending on the context so it should be a text.
+A `Grade` is a value the teacher gives to a `Student` on a given `Area` or `Dimension`.
+This process is reapeated for each `Quarter` of the `SchoolYear`.
+
+It has the following properties:
+
+- id: number => unique id of the grade
+- value: string => value of the grade
 
 ### Domain preview
 
