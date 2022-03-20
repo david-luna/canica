@@ -11,7 +11,6 @@ import {
   SchoolClass,
   SchoolClassRepository,
   SchoolYear,
-  Teacher,
 } from "../domain";
 import { StudentMapper } from "@/backend/school/mappers";
 
@@ -161,11 +160,10 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
           `${schoolClass.label}`,
           `${schoolClass.year.start.getFullYear()}`,
           `${schoolClass.year.end.getFullYear()}`,
-          `${schoolClass.teacher.name}`,
         ].join("__"),
         mimeType: fileMimeType,
         parents: [this.googleFolderId],
-        description: `Grades of the class ${schoolClass.label} with teacher ${schoolClass.teacher.name}`,
+        description: `Grades of the class ${schoolClass.label}`,
       },
     });
 
@@ -273,12 +271,11 @@ export class SchoolClassRepositoryGoogleDrive extends SchoolClassRepository {
    * @param file the drive file details (id, name, ...)
    */
   private fromDetails(file: FileDetails): SchoolClass {
-    const [label, startYear, endYear, teacherName, id] = file.name.split("__");
+    const [label, startYear, endYear, id] = file.name.split("__");
 
     return SchoolClass.create(
       {
         label: label,
-        teacher: new Teacher({ name: teacherName }),
         year: new SchoolYear({
           start: new Date(`09/01/${startYear}`),
           end: new Date(`06/21/${endYear}`),

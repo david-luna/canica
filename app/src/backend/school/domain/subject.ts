@@ -1,4 +1,4 @@
-import { ValueObject } from "@common/domain";
+import { ValueObject } from "@/backend/common/domain";
 
 export interface SubjectProps {
   name: string;
