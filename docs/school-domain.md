@@ -4,11 +4,11 @@ The goal is to have straight definitions to conform an ubiquitous language
 
 ## Student
 
-A `Student` is the person who is going to get `Grades` for different `Subjects`.
+A `Student` is the person who is going to get `Grades` for different `Areas` & `Dimensions`.
 
 It has the following properties:
 
-- id: string => identifier which is the text in his ID card
+- id: string => identifier which is may be the text in his ID card
 - name: string => name of the student
 
 And we can do the following assertions:
@@ -22,8 +22,8 @@ A `SchoolYear` is the period when the classes are performed.
 It has the following properties:
 
 - id: string => identifier which is the combination of the two last digits of start year and end year
-- start: number => the year of the start date of the period
-- end: number =>  the year of the end date of the period
+- startYear: number => the year of the start date of the period
+- finishYear: number =>  the year of the end date of the period
 
 And we can do the following assertions:
 
@@ -38,24 +38,26 @@ his/her `Students`
 
 ## School Class <Aggregate>
 
-A `SchoolClass` is a group of `Students`.
+A `SchoolClass` is a group of `Students` for a given `Area`.
 
 It has the following properties:
 
 - id: number => unique identifier of the class
 - label: string => the group label of the class
 - year: `SchoolYear` => the year this class belongs to
+- area: `Area` => the area of this class
 - students: Collection<`Students`> => the students belonging to that `SchoolClass`
 
 And we can do the following assertions:
 
 - A `SchoolClass` has one or many students
 - A `SchoolClass` belongs to one year
+- A `SchoolClass` belongs to one area
 
 ## Area
 
 A `Area` is what the teacher teaches to one or many `SchoolClass` (math, hisstory, science).
-On a given area the teacher has to evaluate on several dimensions for example in maths
+On a given area the teacher has to evaluate on several `Dimensions` for example in maths
 domensions are: calculus, problem solving, etc.
 
 It has the following properties:

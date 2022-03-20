@@ -1,11 +1,6 @@
 @startuml School
 
-title Marble - School Domain
-
-class Teacher {
-  string id
-  string name
-}
+title Canica - School Domain
 
 class Student {
   string id
@@ -20,42 +15,39 @@ class SchoolYear {
 class SchoolClass << Aggregate >>{
   string id
   string name
-  number year
   
   addStudent(student)
 }
 
-class Subject {
+class Area {
+  string id
+  string name
+}
+
+class Dimension {
+  string id
   string name
 }
 
 class Grade {
-  string name
-  string formula
-}
-
-
-class SchoolClassFactory {
-  createClass(json): SchoolClass
+  string value
 }
 
 class SchoolClassRepository {
-  byYear(schoolYear): SchoolClass[]
+  findClassById(schoolId): SchoolClass
+  findClassByYear(schoolYear): SchoolClass[]
   
-  saveClass(schoolClass): void
-  deleteClass(schoolClass): void
+  exists(schoolClass): boolean
+  save(schoolClass): void
+  delete(schoolClass): void
 }
 
-class SchoolClassFinder << Service >>{
-  getAll(): SchoolClass[]
-}
 
 SchoolClassRepository --> SchoolClass
-
 SchoolClass "1" -- "1" SchoolYear
-SchoolClass "*" -- "1" Teacher
-SchoolClass "*" -- "1" Subject
+SchoolClass "*" -- "1" Area
+Dimension o-- Area
 SchoolClass "1..*" -- "*..1" Student
-(SchoolClass, Student) .. Grade
+(SchoolClass, Student, Area) .. Grade
 
 @enduml

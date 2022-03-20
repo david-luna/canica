@@ -3,18 +3,18 @@
 ## UC01 - List grade classes
 
 As a teacher I want to see the list of classes I already have to give grades.
-These classes should be should be divide in two groups: non uplades & uploade classes.
+These classes should be should be divide in two groups: non uploaded & uploade dclasses.
 
 ### DoD UC01
 
 `WHEN` Teacher starts the application
-`IF` there is no saved sessin `THEN` request credentials
+`IF` there is no saved session `THEN` request credentials
 `WHEN` teacher is logged in
 `THEN` app shows list of classes in two different tabs (current, uploaded)
 
 ## UC02 - Download
 
-As a teacher I want to create new grade classes to fill up for later upload.
+As a teacher I want to create new classes by area and quarter to fill up for later upload.
 
 ### DoD UC02
 
@@ -29,16 +29,27 @@ As a teacher I want to create new grade classes to fill up for later upload.
 `THEN` app extracts from the portal the groups of students
 `AND` for each group, area & quarter a new class is created
 
-
 ## UC03 - Upload
 
 As a teacher once finished to fill the grades of one class I want to upload them
 to the platform.
-### DoD UC02
+
+### DoD UC03
 
 `GIVEN` I'm logged in
 `WHEN` I select some files on the list
-`AND` I cammand to upload them
+`AND` I command to upload them
 `THEN` app requests for credentials to access the portal
 `WHEN` I input the credentials
 `THEN` app uploads the grades for the given list of students in the proper area and quarter
+
+## UC03 - Edit
+
+As a teacher I want to edit an specific class if not uploaded yet.
+
+### DoD UC03
+
+`GIVEN` I'm logged in
+`WHEN` I select a class on the current list
+`AND` I click on the edit button
+`THEN` app opens a window with the class info that allows to edit
