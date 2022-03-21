@@ -6,7 +6,19 @@ export interface DimensionProps {
 }
 
 export class Dimension extends ValueObject<DimensionProps> {
-  constructor(props: DimensionProps) {
+  private constructor(props: DimensionProps) {
     super(props);
+  }
+
+  get code(): string {
+    return this.props.code;
+  }
+
+  get name(): string {
+    return this.props.name;
+  }
+
+  static create(props: DimensionProps): Dimension {
+    return new Dimension(props);
   }
 }

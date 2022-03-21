@@ -4,7 +4,10 @@
   </div>
   <div class="action-buttons">
     <button @click="googleLogin">Login!</button>
-    <button @click="importData">Import!</button>
+    <br />
+    <button @click="importEvaluations">Import!</button>
+    <br />
+    <button @click="listEvaluations">List!</button>
   </div>
 </template>
 
@@ -12,18 +15,51 @@
 /*global backend*/
 import { Vue } from "vue-class-component";
 
+import {
+  AuthCommandTypes,
+  LoginCommand,
+} from "@/backend/auth/use-cases/commands";
+
+import {
+  SchoolCommandTypes,
+  ImportEvaluationsCommand,
+} from "@/backend/school/use-cases/commands";
+
+import {
+  SchoolQueryTypes,
+  ListEvaluationQuery,
+} from "@/backend/school/use-cases/queries";
+
 export default class About extends Vue {
   googleLogin(): void {
+    const payload: LoginCommand = { vendor: "google" };
     backend.dispatchCommand({
-      type: "login",
-      payload: { vendor: "google" },
+      type: AuthCommandTypes.Login,
+      payload,
     });
   }
 
-  importData(): void {
+  importEvaluations(): void {
+    const payload: ImportEvaluationsCommand = {
+      username: `${process.env.PLATFORM_USERNAME}`,
+      password: `${process.env.PLATFORM_PASSWORD}`,
+      areaCodes: ["LCA1"],
+      debug: true,
+    };
     backend.dispatchCommand({
-      type: "importData",
-      payload: { debug: true },
+      type: SchoolCommandTypes.ImportEvaluations,
+      payload,
+    });
+  }
+
+  listEvaluations(): void {
+    console.log("list on th UI");
+    const payload: ListEvaluationQuery = {
+      summary: true,
+    };
+    backend.dispatchQuery({
+      type: SchoolQueryTypes.ListEvaluations,
+      payload,
     });
   }
 

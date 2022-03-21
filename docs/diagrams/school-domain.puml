@@ -2,26 +2,42 @@
 
 title Canica - School Domain
 
-class Student {
+class Student << Entity >>{
   string id
   string name
 }
 
-class SchoolYear {
-  int startYear
-  int finishYear
-}
-
-class SchoolClass << Aggregate >>{
+class StudentGroup << Entity >>{
   string id
   string name
-  
+
   addStudent(student)
+  removeStudent(student)
 }
 
-class Area {
+class SchoolTerm << Entity >>{
+  string id
+  int start
+  int finish
+}
+
+class Quarter << Entity >>{
+  string id
+  int number
+}
+
+class Evaluation << Aggregate >>{
   string id
   string name
+
+  addGrade(grade)
+}
+
+class Area << Entity >>{
+  string id
+  string name
+
+  addDimension(dimension)
 }
 
 class Dimension {
@@ -30,24 +46,19 @@ class Dimension {
 }
 
 class Grade {
+  string dimensionId
+  string studentId
   string value
 }
 
-class SchoolClassRepository {
-  findClassById(schoolId): SchoolClass
-  findClassByYear(schoolYear): SchoolClass[]
-  
-  exists(schoolClass): boolean
-  save(schoolClass): void
-  delete(schoolClass): void
-}
 
-
-SchoolClassRepository --> SchoolClass
-SchoolClass "1" -- "1" SchoolYear
-SchoolClass "*" -- "1" Area
+Student o-- StudentGroup
 Dimension o-- Area
-SchoolClass "1..*" -- "*..1" Student
-(SchoolClass, Student, Area) .. Grade
+Quarter o-- SchoolTerm
+
+Evaluation "*" -- "1" SchoolTerm
+Evaluation "*" -- "1" Area
+Evaluation "*" -- "1" StudentGroup
+Evaluation "1" -- "*" Grade
 
 @enduml
