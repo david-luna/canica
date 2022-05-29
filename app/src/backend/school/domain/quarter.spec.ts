@@ -1,5 +1,4 @@
 import { Quarter } from "./quarter";
-import { Dimension } from "./dimension";
 import { SchoolTerm } from "./school-term";
 
 describe("Quarter model", () => {
@@ -30,6 +29,28 @@ describe("Quarter model", () => {
 
   it("should create the 3rd quarter of a term from a given date in that quarter", () => {
     const quarter = Quarter.fromDate(new Date("05/01/2022"));
+
+    expect(quarter.number).toEqual(3);
+    expect(quarter.term.start.getFullYear()).toEqual(2021);
+    expect(quarter.term.finish.getFullYear()).toEqual(2022);
+  });
+
+  it("should return a string representation of the quarter", () => {
+    const quarter = Quarter.fromDate(new Date("05/01/2022"));
+
+    expect(quarter.toString()).toEqual("21-22-T3");
+  });
+
+  it("should create a quarter from its string representation", () => {
+    const quarter = Quarter.fromString("21-22-T3");
+
+    expect(quarter.number).toEqual(3);
+    expect(quarter.term.start.getFullYear()).toEqual(2021);
+    expect(quarter.term.finish.getFullYear()).toEqual(2022);
+  });
+
+  it("should create a quarter from a string date", () => {
+    const quarter = Quarter.fromString("5/20/2022, 1:02:24 AM");
 
     expect(quarter.number).toEqual(3);
     expect(quarter.term.start.getFullYear()).toEqual(2021);

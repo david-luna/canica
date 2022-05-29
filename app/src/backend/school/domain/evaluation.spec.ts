@@ -1,7 +1,7 @@
 import { Area } from "./area";
 import { Dimension } from "./dimension";
 import { Grade } from "./grade";
-import { Evaluation } from "./evaluation";
+import { Evaluation, EvaluationStatus } from "./evaluation";
 import { Student } from "./student";
 import { StudentsGroup } from "./students-group";
 import { Quarter } from "./quarter";
@@ -10,6 +10,7 @@ describe("StudentsGroup model", () => {
   let evaluation: Evaluation;
 
   beforeEach(() => {
+    const status = EvaluationStatus.Imported;
     const label = "ClassLabel";
     const studn = Student.create({ code: "S1", name: "Student Name" });
     const dimen = Dimension.create({ name: "D1", code: "D1" });
@@ -21,7 +22,14 @@ describe("StudentsGroup model", () => {
       dimensions: [dimen],
     });
 
-    evaluation = Evaluation.create({ label, quarter, area, group, grades: [] });
+    evaluation = Evaluation.create({
+      label,
+      quarter,
+      area,
+      group,
+      status,
+      grades: [],
+    });
   });
 
   it("should let add a grade for a given student and dimension", () => {

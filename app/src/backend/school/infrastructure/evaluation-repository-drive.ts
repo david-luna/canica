@@ -126,7 +126,6 @@ export class EvaluationRepositoryGoogle extends EvaluationRepository {
         description: `Evaluation of the group ${evaluation.group.name}`,
         appProperties: {
           ...EvaluationMapper.toStorageProps(evaluation),
-          uploaded: "false",
         },
       },
     });

@@ -45,6 +45,7 @@ export interface SchoolClassDataTransfer {
 
 export interface EvaluationDataTransfer {
   _id: string;
+  status: string;
   label: string;
   area: AreaDataTransfer;
   group: StudentsGroupDataTransfer;
@@ -54,6 +55,7 @@ export interface EvaluationDataTransfer {
 
 export interface EvaluationSummaryDataTransfer {
   _id: string;
+  status: string;
   label: string;
   area: AreaDataTransfer;
   group: StudentsGroupDataTransfer;

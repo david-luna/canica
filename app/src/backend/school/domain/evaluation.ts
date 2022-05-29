@@ -4,12 +4,18 @@ import { Grade } from "./grade";
 import { Quarter } from "./quarter";
 import { StudentsGroup } from "./students-group";
 
+export enum EvaluationStatus {
+  Imported = "imported",
+  Uploaded = "uploaded",
+}
+
 export interface EvaluationProps {
   label: string;
   area: Area;
   group: StudentsGroup;
   quarter: Quarter;
   grades: Grade[];
+  status: EvaluationStatus;
 }
 
 export class Evaluation extends AggregateRoot<EvaluationProps> {
@@ -41,11 +47,15 @@ export class Evaluation extends AggregateRoot<EvaluationProps> {
     return this.props.grades;
   }
 
+  get status(): EvaluationStatus {
+    return this.props.status;
+  }
+
   static create(props: EvaluationProps, id?: EntityIdentifier): Evaluation {
     return new Evaluation(props, id);
   }
 
-  addGrade(grade: Grade) {
+  addGrade(grade: Grade): void {
     const students = this.props.group.students;
     const hasStudent = students.some((s) => s.code === grade.studentId);
 

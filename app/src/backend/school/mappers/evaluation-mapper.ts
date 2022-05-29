@@ -1,5 +1,5 @@
 import { Identifier } from "@/backend/common/domain";
-import { Area, Evaluation, Quarter, StudentsGroup } from "../domain";
+import { Area, Evaluation, EvaluationStatus, Quarter, StudentsGroup } from "../domain";
 
 import { EvaluationDataTransfer } from "../data-transfer";
 import { AreaMapper } from "./area-mapper";
@@ -8,6 +8,7 @@ import { GradeMapper } from "./grade-mapper";
 
 export type EvaluationStorageProps = {
   id: string;
+  status: string;
   quarterId: string;
   groupId: string;
   groupName: string;
@@ -19,6 +20,7 @@ export class EvaluationMapper {
   static toDataTransfer(evaluation: Evaluation): EvaluationDataTransfer {
     return {
       _id: evaluation.id.toString(),
+      status: evaluation.status.toString(),
       label: evaluation.label.toString(),
       quarter: {
         number: evaluation.quarter.number,
@@ -41,6 +43,7 @@ export class EvaluationMapper {
     return Evaluation.create(
       {
         label: evaluation.label,
+        status: evaluation.status as EvaluationStatus,
         area: AreaMapper.fromDataTransfer(evaluation.area),
         grades: evaluation.grades.map(GradeMapper.toDomain),
         quarter: Quarter.fromDate(new Date(evaluation.quarter.term.start)),
@@ -66,6 +69,7 @@ export class EvaluationMapper {
       groupName: group.name.toString(),
       areaCode: area.code.toString(),
       areaName: area.name.toString(),
+      status: evaluation.status,
     };
   }
 
@@ -73,6 +77,7 @@ export class EvaluationMapper {
     return Evaluation.create(
       {
         label: props.id,
+        status: props.status as EvaluationStatus,
         quarter: Quarter.fromString(props.quarterId),
         grades: [],
         group: StudentsGroup.create({ name: props.groupName, students: [] }),

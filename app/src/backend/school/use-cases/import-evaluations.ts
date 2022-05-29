@@ -10,6 +10,7 @@ import {
   AreaRepository,
   Evaluation,
   EvaluationRepository,
+  EvaluationStatus,
   Quarter,
 } from "../domain";
 import { EvaluationMapper } from "../mappers/evaluation-mapper";
@@ -48,6 +49,7 @@ export class ImportEvaluationsUseCase
           quarter,
           label,
           grades: [],
+          status: EvaluationStatus.Imported,
         });
         evaluations.push(evaluation);
         await this.evaluationRepository.save(evaluation);
