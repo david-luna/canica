@@ -8,6 +8,8 @@
     <button @click="importEvaluations">Import!</button>
     <br />
     <button @click="listEvaluations">List!</button>
+    <br />
+    <button @click="uploadEvaluations">Upload!</button>
   </div>
 </template>
 
@@ -23,6 +25,7 @@ import {
 import {
   SchoolCommandTypes,
   ImportEvaluationsCommand,
+  UploadEvaluationsCommand,
 } from "@/backend/school/use-cases/commands";
 
 import {
@@ -53,12 +56,23 @@ export default class About extends Vue {
   }
 
   listEvaluations(): void {
-    console.log("list on th UI");
     const payload: ListEvaluationQuery = {
       summary: true,
     };
     backend.dispatchQuery({
       type: SchoolQueryTypes.ListEvaluations,
+      payload,
+    });
+  }
+
+  uploadEvaluations(): void {
+    console.log("list on th UI");
+    const payload: UploadEvaluationsCommand = {
+      debug: true,
+      evaluationIds: [],
+    };
+    backend.dispatchQuery({
+      type: SchoolCommandTypes.UploadEvaluations,
       payload,
     });
   }
