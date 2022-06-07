@@ -3,7 +3,7 @@ import * as pie from "puppeteer-in-electron";
 import * as puppeteer from "puppeteer-core";
 import { Injectable } from "annotatron";
 import { Identifier } from "@/backend/common/domain";
-import { Student, StudentsGroup } from "../domain";
+import { Evaluation, Student, StudentsGroup } from "../domain";
 
 type ClassListResponse = {
   list: {
@@ -51,7 +51,7 @@ const BASE_URL = "https://bfgh.aplicacions.ensenyament.gencat.cat/bfgh";
 const PortalUrls = {
   Login: BASE_URL,
   GroupList: `${BASE_URL}/avaluacio/parcialAvaluacioGrupAlumne`,
-  StudentListByClass: `${BASE_URL}/avaluacio/parcialAvaluacioGrupAlumne#/parcialAvaluacioGrupAlumne/{id}`,
+  StudentListByGroup: `${BASE_URL}/avaluacio/parcialAvaluacioGrupAlumne#/parcialAvaluacioGrupAlumne/{id}`,
   GroupListFetch:
     "services/SessioAvaluacioParcialController/listGrupsClasseGrupAlumne",
   StudentListFetch:
@@ -74,11 +74,7 @@ export class PortalService {
   }
 
   async getGroups(options = { debug: false }): Promise<StudentsGroup[]> {
-    const partitionName = `scrapper_${Date.now()}`;
-    const webPreferences = { session: session.fromPartition(partitionName) };
-    const browser = await this.browserPromise;
-    const window = new BrowserWindow({ show: options.debug, webPreferences });
-    const page = await pie.getPage(browser, window);
+    const { page, window } = await this.getWindowAndPage(options);
 
     try {
       await this.login(page, { username, password });
@@ -94,6 +90,34 @@ export class PortalService {
     } finally {
       window.close();
     }
+  }
+
+  async uploadEvaluations(evaluations: Evaluation[]): Promise<string[]> {
+    const { page, window } = await this.getWindowAndPage();
+    const uploadedIds = [];
+
+    try {
+      // TODO
+      await this.login(page, { username, password });
+      for (const evaluation of evaluations) {
+        await this.saveEvaluation(page, evaluation);
+        uploadedIds.push(evaluation.id.toString());
+      }
+    } finally {
+      window.close();
+    }
+
+    return uploadedIds;
+  }
+
+  private async getWindowAndPage(options = { debug: false }) {
+    const partitionName = `scrapper_${Date.now()}`;
+    const webPreferences = { session: session.fromPartition(partitionName) };
+    const browser = await this.browserPromise;
+    const window = new BrowserWindow({ show: options.debug, webPreferences });
+    const page = await pie.getPage(browser, window);
+
+    return { page, window };
   }
 
   private async login(
@@ -167,7 +191,7 @@ export class PortalService {
     };
 
     page.on("response", captureStudents);
-    const studentListUrl = PortalUrls.StudentListByClass.replace(
+    const studentListUrl = PortalUrls.StudentListByGroup.replace(
       "{id}",
       group.id.toString()
     );
@@ -175,5 +199,21 @@ export class PortalService {
     await page.waitForNetworkIdle();
 
     return deferred.promise;
+  }
+
+  private async saveEvaluation(
+    page: puppeteer.Page,
+    evaluation: Evaluation
+  ): Promise<void> {
+    const groupId = evaluation.group.id.toString();
+
+    const studentListUrl = PortalUrls.StudentListByGroup.replace(
+      "{id}",
+      evaluation.group.id.toString()
+    );
+    await page.goto(studentListUrl);
+    await page.waitForNetworkIdle();
+
+    // TODO: fill the form on the given quarter
   }
 }

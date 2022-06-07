@@ -10,7 +10,10 @@ import { StudentMapper } from "@/backend/school/mappers";
 import { Evaluation, EvaluationRepository } from "@/backend/school/domain";
 
 import { GoogleToken, MimeType, WithGoogleToken } from "./google-utils";
-import { EvaluationMapper, EvaluationStorageProps } from "../mappers/evaluation-mapper";
+import {
+  EvaluationMapper,
+  EvaluationStorageProps,
+} from "../mappers/evaluation-mapper";
 
 const defaultListParams: Partial<drive_v3.Params$Resource$Files$List> = {
   corpora: "user",
@@ -51,6 +54,34 @@ export class EvaluationRepositoryGoogle extends EvaluationRepository {
     return result.data.files
       .map((file) => file.appProperties as EvaluationStorageProps)
       .map(EvaluationMapper.fromStorageProps);
+  }
+
+  @WithGoogleToken
+  async findById(...ids: string[]): Promise<Evaluation[]> {
+    const evaluations: Evaluation[] = [];
+
+    // TODO: do the query properly
+    const result = await this.googleDrive.files.list({
+      ...defaultListParams,
+      fields: "files/id, files/name, files/appProperties",
+      q: [
+        `mimeType = '${MimeType.Spreadsheet}'`,
+        `'${this.googleFolderId}' in parents`,
+      ].join(" and "),
+    });
+
+    if (result.status !== 200) {
+      throw new Error(`EvaluationRepository: error connection to storage.`);
+    }
+
+    const files = result.data.files || [];
+
+    for (const file of files) {
+      const evaluation = await this.extractEvaluation(file);
+      evaluations.push(evaluation);
+    }
+
+    return evaluations;
   }
 
   @WithGoogleToken
@@ -190,7 +221,7 @@ export class EvaluationRepositoryGoogle extends EvaluationRepository {
   }
 
   /**
-   * Creates a new spreadsheed from an evaluation
+   * Updates a spreadsheet form a given evaluation
    * @param evaluation the evaluation to store
    * @param spreadsheetId the ID of the file to update
    */
@@ -200,6 +231,23 @@ export class EvaluationRepositoryGoogle extends EvaluationRepository {
   ): Promise<void> {
     console.log(`Update evaluation ${evaluation.id} into ${spreadsheetId}`);
     throw Error("Update evaluation into spreadsheet not implemented!");
+  }
+
+  /**
+   * Returns the evaluation from the given file
+   *
+   * @param file the spreadsheet file which contains evaluation data
+   * @returns Evaluation
+   */
+  private async extractEvaluation(
+    file: drive_v3.Schema$File
+  ): Promise<Evaluation> {
+    const props = file.appProperties as EvaluationStorageProps;
+    const evaluation = EvaluationMapper.fromStorageProps(props);
+
+    // TODO: get file contents and fill evaluation with students and their grades
+
+    return evaluation;
   }
 
   /**

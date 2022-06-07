@@ -13,6 +13,10 @@ export class EvaluationRepository extends Repository<Evaluation> {
     throw new Error(errorMessage);
   }
 
+  findById(...ids: string[]): Promise<Evaluation[]> {
+    throw new Error(errorMessage);
+  }
+
   exists(evaluation: Evaluation): Promise<boolean> {
     throw new Error(errorMessage);
   }
