@@ -1,10 +1,10 @@
-import { Entity } from "@/backend/common/domain";
+import { ValueObject } from "@/backend/common/domain";
 
 export interface EmailProps {
   address: string;
 }
 
-export class Email extends Entity<EmailProps> {
+export class Email extends ValueObject<EmailProps> {
   constructor(props: EmailProps) {
     super(props);
   }

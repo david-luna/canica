@@ -1,0 +1,27 @@
+@startuml School
+
+title Canica - School Domain
+
+class Student {
+  string id
+  string name
+}
+
+class StudentGroup << Aggregate >>{
+  string id
+  string name
+}
+
+class Grade {
+  string value
+}
+
+class Quarter {
+  number value
+}
+
+StudentGroup "1..*" -- "*..1" Student
+Student "1" -- "*..1" Grade
+Quarter "1" -- "*..1" Grade
+
+@enduml

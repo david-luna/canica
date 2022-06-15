@@ -1,14 +1,22 @@
-import { SchoolClassDataTransfer } from "../data-transfer";
+import { AreaDataTransfer, EvaluationDataTransfer } from "../data-transfer";
 
-export enum SchoholQueryTypes {
-  ListClasses = "listClasses",
+export enum SchoolQueryTypes {
+  ListAreas = "listAreas",
+  ListEvaluations = "listEvaluations",
 }
 
-export interface ListSchoolClassesQuery {
-  year: string;
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface ListAreasQuery {}
+
+export interface ListEvaluationQuery {
+  summary: boolean;
 }
 
-export interface ListSchoolClassesResult {
-  type: "list-classes";
-  classes: SchoolClassDataTransfer[];
+export interface ListAreasResult {
+  type: SchoolQueryTypes.ListAreas;
+  areas: AreaDataTransfer[];
+}
+export interface ListEvaluationResult {
+  type: SchoolQueryTypes.ListEvaluations;
+  evaluations: EvaluationDataTransfer[];
 }

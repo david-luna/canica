@@ -20,6 +20,7 @@ bootstrapModule(BackendModule, ipcMain);
 async function createWindow() {
   // Create the browser window.
   const win = new BrowserWindow({
+    show: false,
     width: 800,
     height: 600,
     webPreferences: {
@@ -45,6 +46,15 @@ async function createWindow() {
 
   // Connect window to the main thread
   connectWindow(win);
+  // And listen for the show command
+  const commandsChannel = "annotatron:commands";
+  const showWindow = (event: unknown, data: { type: string }) => {
+    if (data.type === "show-window") {
+      win.show();
+      ipcMain.off(commandsChannel, showWindow);
+    }
+  };
+  ipcMain.on(commandsChannel, showWindow);
 }
 
 // Quit when all windows are closed.

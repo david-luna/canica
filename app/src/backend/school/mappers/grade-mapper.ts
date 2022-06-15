@@ -4,19 +4,19 @@ import { GradeDataTransfer } from "../data-transfer";
 export class GradeMapper {
   static toDataTransfer(grade: Grade): GradeDataTransfer {
     return {
-      code: grade.code.toString(),
+      dimensionId: grade.dimensionId.toString(),
+      studentId: grade.studentId.toString(),
       name: grade.name.toString(),
       value: grade.value.toString(),
-      options: grade.options.map((o) => o.toString()),
     };
   }
 
   static toDomain(data: GradeDataTransfer): Grade {
-    return new Grade({
-      code: data.code,
+    return Grade.create({
+      dimensionId: data.dimensionId,
+      studentId: data.studentId,
       name: data.name,
       value: data.value,
-      options: data.options,
     });
   }
 }

@@ -1,21 +1,37 @@
 import { ElectronModule } from "annotatron";
-import { SchoolClassRepository } from "./domain";
-import { SchoolClassRepositoryGoogleDrive } from "./infrastructure";
-import { AfterSchoolClassRecordCreated } from "./subscribers/after-school-class-record-created";
-import { ListSchoolClassesUseCase } from "./use-cases/list-school-classes";
+import { AreaRepository, EvaluationRepository } from "./domain";
+import {
+  AreaRepositoryStatic,
+  EvaluationRepositoryGoogle,
+} from "./infrastructure";
+import { PortalService } from "./services/portal.service";
+import {
+  ImportEvaluationsUseCase,
+  ListAreasUseCase,
+  ListEvaluationsUseCase,
+} from "./use-cases";
+import { UploadEvaluationsUseCase } from "./use-cases/upload-evaluations";
 
 @ElectronModule({
   imports: [],
   providers: [
     // App use cases
-    ListSchoolClassesUseCase,
+    ListAreasUseCase,
+    ListEvaluationsUseCase,
+    ImportEvaluationsUseCase,
+    UploadEvaluationsUseCase,
+    // Services
+    PortalService,
     // Infra
     {
-      provide: SchoolClassRepository,
-      useClass: SchoolClassRepositoryGoogleDrive,
+      provide: EvaluationRepository,
+      useClass: EvaluationRepositoryGoogle,
     },
-    // Subscribers to events
-    AfterSchoolClassRecordCreated,
+    {
+      provide: AreaRepository,
+      useClass: AreaRepositoryStatic,
+    },
+    // Subscribers to events (none for now)
   ],
 })
 export class SchoolModule {}

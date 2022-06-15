@@ -4,11 +4,10 @@ import { Grade } from "./grade";
 export interface StudentProps {
   code: string;
   name: string;
-  grades: Grade[];
 }
 
 export class Student extends ValueObject<StudentProps> {
-  constructor(props: StudentProps) {
+  private constructor(props: StudentProps) {
     super(props);
   }
 
@@ -20,7 +19,7 @@ export class Student extends ValueObject<StudentProps> {
     return this.props.name;
   }
 
-  get grades(): Grade[] {
-    return this.props.grades;
+  static create(props: StudentProps): Student {
+    return new Student(props);
   }
 }

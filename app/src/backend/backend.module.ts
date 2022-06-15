@@ -2,10 +2,9 @@ import { ElectronModule } from "annotatron";
 import { CommonModule } from "./common";
 import { AuthModule } from "./auth";
 import { SchoolModule } from "./school";
-import { PortalModule } from "./portal";
 
 @ElectronModule({
-  imports: [CommonModule, AuthModule, SchoolModule, PortalModule],
+  imports: [CommonModule, AuthModule, SchoolModule],
   providers: [],
 })
 export class BackendModule {}
