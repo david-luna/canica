@@ -5,9 +5,7 @@ import { GoogleAuthService } from "../services/google-auth";
 
 @Injectable()
 export class LoginUseCase implements UseCase<LoginCommand, LoginResult> {
-  constructor(private readonly googleAuth: GoogleAuthService) {
-    console.log("use case created", googleAuth);
-  }
+  constructor(private readonly googleAuth: GoogleAuthService) {}
 
   @Command(AuthCommandTypes.Login)
   async execute(): Promise<LoginResult> {

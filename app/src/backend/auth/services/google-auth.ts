@@ -76,6 +76,7 @@ export class GoogleAuthService {
       width: 500,
       height: 500,
       show: true,
+      frame: false,
     });
     const authUrl = `${GOOGLE_AUTHORIZATION_URL}?${stringify(AUTH_URL_PARAMS)}`;
 
