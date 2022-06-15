@@ -7,13 +7,19 @@ import { drive, drive_v3 } from "@googleapis/drive";
 import { sheets, sheets_v4 } from "@googleapis/sheets";
 import { DomainEventsBus } from "@/backend/common/domain";
 import { StudentMapper } from "@/backend/school/mappers";
-import { Evaluation, EvaluationRepository } from "@/backend/school/domain";
+import {
+  Dimension,
+  Evaluation,
+  EvaluationRepository,
+  Student,
+} from "@/backend/school/domain";
 
 import { GoogleToken, MimeType, WithGoogleToken } from "./google-utils";
 import {
   EvaluationMapper,
   EvaluationStorageProps,
 } from "../mappers/evaluation-mapper";
+import { Grade } from "../domain/grade";
 
 const defaultListParams: Partial<drive_v3.Params$Resource$Files$List> = {
   corpora: "user",
@@ -61,13 +67,19 @@ export class EvaluationRepositoryGoogle extends EvaluationRepository {
     const evaluations: Evaluation[] = [];
 
     // TODO: do the query properly
+    // const query = [
+    //   `mimeType = '${MimeType.Spreadsheet}'`,
+    //   `'${this.googleFolderId}' in parents`,
+    //   ids.map((id) => `id = "${id}"`).join(" or "),
+    // ].join(" and ");
+    const query = ids
+      .map((id) => `appProperties has { key='id' and value='${id}' }`)
+      .join(" or ");
+    console.log(query);
     const result = await this.googleDrive.files.list({
       ...defaultListParams,
       fields: "files/id, files/name, files/appProperties",
-      q: [
-        `mimeType = '${MimeType.Spreadsheet}'`,
-        `'${this.googleFolderId}' in parents`,
-      ].join(" and "),
+      q: query,
     });
 
     if (result.status !== 200) {
@@ -246,6 +258,98 @@ export class EvaluationRepositoryGoogle extends EvaluationRepository {
     const evaluation = EvaluationMapper.fromStorageProps(props);
 
     // TODO: get file contents and fill evaluation with students and their grades
+    const fileColumns = await this.googleSheets.spreadsheets.values.get({
+      spreadsheetId: `${file.id}`,
+      range: "Sheet1!A1:Z40",
+      majorDimension: "COLUMNS",
+    });
+
+    if (fileColumns.status !== 200) {
+      throw Error(
+        `Error reading evaluation contents: ${fileColumns.statusText}`
+      );
+    }
+
+    if (fileColumns.data.values) {
+      const [studentCodes, studentNames, ...columns] = fileColumns.data.values;
+      const { group } = evaluation;
+
+      for (let i = 1; i < studentCodes.length; i++) {
+        const code = studentCodes[i];
+        const name = studentNames[i];
+        if (code) {
+          group.addStudent(Student.create({ code, name }));
+        }
+      }
+
+      columns.forEach((column) => {
+        const dimensionCode = column[0];
+        if (dimensionCode) {
+          const dimension = Dimension.create({
+            code: dimensionCode,
+            name: `Dim ${dimensionCode}`,
+          });
+          evaluation.area.addDimension(dimension);
+          for (let i = 1; i < column.length && i < group.students.length; i++) {
+            const grade = Grade.create({
+              dimensionId: dimensionCode,
+              name: "nota",
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              studentId: group.students.at(i)!.code,
+              value: column[i] || "N/A",
+            });
+            evaluation.addGrade(grade);
+          }
+        }
+      });
+    }
+
+    return evaluation;
+  }
+
+  private async extractEvaluationRows(
+    file: drive_v3.Schema$File
+  ): Promise<Evaluation> {
+    const props = file.appProperties as EvaluationStorageProps;
+    const evaluation = EvaluationMapper.fromStorageProps(props);
+
+    // TODO: get file contents and fill evaluation with students and their grades
+    const fileRows = await this.googleSheets.spreadsheets.values.get({
+      spreadsheetId: `${file.id}`,
+      range: "Sheet1!A1:Z20",
+      majorDimension: "ROWS",
+    });
+
+    if (fileRows.status !== 200) {
+      throw Error(`Error reading evaluation contents: ${fileRows.statusText}`);
+    }
+
+    if (fileRows.data.values) {
+      const [headers, ...rows] = fileRows.data.values;
+      const dimensionIndexes = new Map<number, string>();
+      headers.forEach((header, index) => {
+        if (index < 2) return;
+        const dimension = Dimension.create({ code: header, name: header });
+        evaluation.area.addDimension(dimension);
+        dimensionIndexes.set(index, header);
+      });
+
+      rows.forEach((row) => {
+        const [code, name] = row;
+        const student = Student.create({ code, name });
+
+        evaluation.group.addStudent(student);
+        dimensionIndexes.forEach((dimensionId, index) => {
+          const grade = Grade.create({
+            dimensionId,
+            name,
+            studentId: code,
+            value: row[index],
+          });
+          evaluation.addGrade(grade);
+        });
+      });
+    }
 
     return evaluation;
   }

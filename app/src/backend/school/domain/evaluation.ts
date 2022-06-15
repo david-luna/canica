@@ -75,9 +75,9 @@ export class Evaluation extends AggregateRoot<EvaluationProps> {
     }
 
     const grades = this.props.grades;
-    const isInClass = grades.some((g) => g.equals(grade));
+    const isInEvaluation = grades.some((g) => g.equals(grade));
 
-    if (isInClass) {
+    if (isInEvaluation) {
       throw Error(
         `Grade for student ${grade.studentId} and dimension ${grade.dimensionId} already exists`
       );

@@ -24,7 +24,9 @@ export class UploadEvaluationsUseCase
     const { evaluationIds } = request;
     const evaluations = await this.evaluationRepository.findById(...evaluationIds);
 
-    const result = await this.portalService.uploadEvaluations(evaluations);
+    console.log(JSON.stringify(evaluations));
+
+    // const result = await this.portalService.uploadEvaluations(evaluations);
 
     return {
       type: SchoolCommandTypes.UploadEvaluations,

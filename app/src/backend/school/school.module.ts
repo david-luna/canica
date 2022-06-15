@@ -10,6 +10,7 @@ import {
   ListAreasUseCase,
   ListEvaluationsUseCase,
 } from "./use-cases";
+import { UploadEvaluationsUseCase } from "./use-cases/upload-evaluations";
 
 @ElectronModule({
   imports: [],
@@ -18,6 +19,7 @@ import {
     ListAreasUseCase,
     ListEvaluationsUseCase,
     ImportEvaluationsUseCase,
+    UploadEvaluationsUseCase,
     // Services
     PortalService,
     // Infra
