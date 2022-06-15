@@ -66,12 +66,11 @@ export default class About extends Vue {
   }
 
   uploadEvaluations(): void {
-    console.log("list on th UI");
     const payload: UploadEvaluationsCommand = {
       debug: true,
-      evaluationIds: [],
+      evaluationIds: ["a8d3423a-d404-4551-be02-c264378d9823", "550d4902-3e96-4653-9be0-2b967a49316b"],
     };
-    backend.dispatchQuery({
+    backend.dispatchCommand({
       type: SchoolCommandTypes.UploadEvaluations,
       payload,
     });
