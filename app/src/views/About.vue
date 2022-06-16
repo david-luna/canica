@@ -3,8 +3,6 @@
     <h1>This is an about page</h1>
   </div>
   <div class="action-buttons">
-    <button @click="googleLogin">Login!</button>
-    <br />
     <button @click="importEvaluations">Import!</button>
     <br />
     <button @click="listEvaluations">List!</button>
@@ -13,15 +11,9 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 /*global backend*/
-import { Vue } from "vue-class-component";
-
-import {
-  AuthCommandTypes,
-  LoginCommand,
-} from "@/backend/auth/use-cases/commands";
-
+// TODO: this goes to the store
 import {
   SchoolCommandTypes,
   ImportEvaluationsCommand,
@@ -33,56 +25,51 @@ import {
   ListEvaluationQuery,
 } from "@/backend/school/use-cases/queries";
 
-export default class About extends Vue {
-  googleLogin(): void {
-    const payload: LoginCommand = { vendor: "google" };
-    backend.dispatchCommand({
-      type: AuthCommandTypes.Login,
-      payload,
-    });
-  }
+import { onMounted } from "@vue/runtime-core";
 
-  importEvaluations(): void {
-    const payload: ImportEvaluationsCommand = {
-      username: `${process.env.PLATFORM_USERNAME}`,
-      password: `${process.env.PLATFORM_PASSWORD}`,
-      areaCodes: ["LCA1"],
-      debug: true,
-    };
-    backend.dispatchCommand({
-      type: SchoolCommandTypes.ImportEvaluations,
-      payload,
-    });
-  }
+const importEvaluations = (): void => {
+  const payload: ImportEvaluationsCommand = {
+    username: `${process.env.PLATFORM_USERNAME}`,
+    password: `${process.env.PLATFORM_PASSWORD}`,
+    areaCodes: ["LCA1"],
+    debug: true,
+  };
+  backend.dispatchCommand({
+    type: SchoolCommandTypes.ImportEvaluations,
+    payload,
+  });
+};
 
-  listEvaluations(): void {
-    const payload: ListEvaluationQuery = {
-      summary: true,
-    };
-    backend.dispatchQuery({
-      type: SchoolQueryTypes.ListEvaluations,
-      payload,
-    });
-  }
+const listEvaluations = (): void => {
+  const payload: ListEvaluationQuery = {
+    summary: true,
+  };
+  backend.dispatchQuery({
+    type: SchoolQueryTypes.ListEvaluations,
+    payload,
+  });
+};
 
-  uploadEvaluations(): void {
-    const payload: UploadEvaluationsCommand = {
-      debug: true,
-      evaluationIds: ["a8d3423a-d404-4551-be02-c264378d9823", "550d4902-3e96-4653-9be0-2b967a49316b"],
-    };
-    backend.dispatchCommand({
-      type: SchoolCommandTypes.UploadEvaluations,
-      payload,
-    });
-  }
+const uploadEvaluations = (): void => {
+  const payload: UploadEvaluationsCommand = {
+    debug: true,
+    evaluationIds: [
+      "a8d3423a-d404-4551-be02-c264378d9823",
+      "550d4902-3e96-4653-9be0-2b967a49316b",
+    ],
+  };
+  backend.dispatchCommand({
+    type: SchoolCommandTypes.UploadEvaluations,
+    payload,
+  });
+};
 
-  mounted(): void {
-    backend.results$.subscribe((result) => {
-      console.log("result from backend", result);
-    });
-    backend.errors$.subscribe((error) => {
-      console.log("error from backend", error);
-    });
-  }
-}
+onMounted(() => {
+  backend.results$.subscribe((result) => {
+    console.log("result from backend", result);
+  });
+  backend.errors$.subscribe((error) => {
+    console.log("error from backend", error);
+  });
+});
 </script>

@@ -5,39 +5,32 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 /*global backend*/
-import { Options, Vue } from "vue-class-component";
+// TODO: this must be actions of the store
 import {
   AuthCommandTypes,
   LoginCommand,
 } from "@/backend/auth/use-cases/commands";
 
+import { onMounted } from "@vue/runtime-core";
 import HelloWorld from "@/components/HelloWorld.vue"; // @ is an alias to /src
 
-@Options({
-  components: {
-    HelloWorld,
-  },
-})
-export default class Home extends Vue {
-  googleLogin(): void {
-    const payload: LoginCommand = { vendor: "google" };
-    backend.dispatchCommand({
-      type: AuthCommandTypes.Login,
-      payload,
-    });
-  }
+const googleLogin = (): void => {
+  const payload: LoginCommand = { vendor: "google" };
+  backend.dispatchCommand({
+    type: AuthCommandTypes.Login,
+    payload,
+  });
+};
 
-  mounted(): void {
-    backend.results$.subscribe((result) => {
-      const event = result as { type: string; payload: unknown };
-      if (event.type === AuthCommandTypes.Login) {
-        backend.dispatchCommand({ type: "show-window", payload: null });
-      }
-    });
-
-    this.googleLogin();
-  }
-}
+onMounted((): void => {
+  backend.results$.subscribe((result) => {
+    const event = result as { type: string; payload: unknown };
+    if (event.type === AuthCommandTypes.Login) {
+      backend.dispatchCommand({ type: "show-window", payload: null });
+    }
+  });
+  googleLogin();
+});
 </script>
