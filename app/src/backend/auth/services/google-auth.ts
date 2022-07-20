@@ -1,9 +1,11 @@
 // https://github.com/subhendukundu/Electron-GoogleSheet/blob/master/src/main.js
-
+import { Identifier } from "@/backend/common/domain";
 import { Injectable, emitEvent } from "annotatron";
 import { BrowserWindow, session } from "electron";
 import fetch from "electron-fetch";
 import { stringify } from "qs";
+import { AccessToken } from "../domain/access-token";
+import { AccessTokenRepository } from "../domain/access-token-repository";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RejectCallback = (reason: any) => void;
@@ -46,26 +48,56 @@ const AUTH_URL_PARAMS = {
 
 @Injectable()
 export class GoogleAuthService {
-  login(): Promise<GoogleProfile> {
-    return this.getAuthorizationCode()
-      .then((code) => this.fetchAccessToken(code))
-      .then((tokenData) => {
-        emitEvent({ type: "google_authorized", payload: tokenData });
-        session.defaultSession.cookies.set({
-          url: "https://canica.com",
-          name: "token",
-          value: tokenData.access_token,
-        });
-        return this.fetchUserProfile(tokenData.access_token);
-      })
-      .then((profile) => {
-        session.defaultSession.cookies.set({
-          url: "https://canica.com",
-          name: "profile",
-          value: JSON.stringify(profile),
-        });
-        return profile;
-      });
+  constructor(private readonly accessTokenRepo: AccessTokenRepository) {}
+
+  async login(): Promise<GoogleProfile> {
+    let accessToken = await this.accessTokenRepo.findById("canica");
+
+    console.log("saved token", accessToken);
+    const isValidToken = await this.isValidToken(accessToken);
+    console.log(`token valid ${isValidToken}`);
+
+    if (!isValidToken) {
+      accessToken = await this.refreshToken();
+      await this.accessTokenRepo.save(accessToken);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const tokenValue = accessToken!.value;
+    const profile = await this.fetchUserProfile(tokenValue);
+
+    // TODO: check if necessary
+    session.defaultSession.cookies.set({
+      url: "https://canica.com",
+      name: "token",
+      value: tokenValue,
+    });
+    session.defaultSession.cookies.set({
+      url: "https://canica.com",
+      name: "profile",
+      value: JSON.stringify(profile),
+    });
+    emitEvent({
+      type: "google_authorized",
+      payload: { access_token: tokenValue },
+    });
+
+    return profile;
+  }
+
+  /**
+   * Requests Google OAuth th generate a new token
+   *
+   * @returns the new token
+   */
+  private async refreshToken(): Promise<AccessToken> {
+    const authCode = await this.getAuthorizationCode();
+    const tokenResopnse = await this.fetchAccessToken(authCode);
+
+    return new AccessToken(
+      { value: tokenResopnse.access_token },
+      new Identifier("canica")
+    );
   }
 
   /**
@@ -166,5 +198,24 @@ export class GoogleAuthService {
         Authorization: `Bearer ${accessToken}`,
       },
     }).then((resp) => resp.json<GoogleProfile>());
+  }
+
+  /**
+   * Tells if the given token is valid
+   *
+   * @param token the token to check or null
+   * @returns true if token is not null and valid
+   */
+  private async isValidToken(token: AccessToken | null): Promise<boolean> {
+    if (token) {
+      try {
+        await this.fetchUserProfile(token.value);
+        return Promise.resolve(true);
+      } catch {
+        return Promise.resolve(false);
+      }
+    }
+
+    return Promise.resolve(false);
   }
 }

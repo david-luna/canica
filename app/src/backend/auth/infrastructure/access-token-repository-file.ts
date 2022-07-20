@@ -9,7 +9,7 @@ import {
   AccessTokenStorageProps,
 } from "../mappers/access-token-mapper";
 
-const tokenFile = `${app.getPath("userData")}/0`;
+const tokenFile = `${app.getPath("home")}/.canica`;
 
 console.log("tokenFile", tokenFile);
 
@@ -58,7 +58,7 @@ export class AccessTokenRepositoryFile extends AccessTokenRepository {
     const prevTokens = await this.findAll();
     const nextTokens = prevTokens.filter((t) => !t.equals(token));
     const tokenData = JSON.stringify(
-      nextTokens.map(AccessTokenMapper.toStorageProps).concat([token])
+      [...nextTokens, token].map(AccessTokenMapper.toStorageProps)
     );
 
     writeFileSync(tokenFile, tokenData, { encoding: "utf-8" });
