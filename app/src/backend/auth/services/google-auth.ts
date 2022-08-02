@@ -52,10 +52,7 @@ export class GoogleAuthService {
 
   async login(): Promise<GoogleProfile> {
     let accessToken = await this.accessTokenRepo.findById("canica");
-
-    console.log("saved token", accessToken);
     const isValidToken = await this.isValidToken(accessToken);
-    console.log(`token valid ${isValidToken}`);
 
     if (!isValidToken) {
       accessToken = await this.refreshToken();
@@ -197,7 +194,13 @@ export class GoogleAuthService {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
-    }).then((resp) => resp.json<GoogleProfile>());
+    })
+      .then((resp) => resp.json())
+      .then((resp) => {
+        if (resp.error) throw Error(resp.error.message);
+
+        return resp as GoogleProfile;
+      });
   }
 
   /**

@@ -20,12 +20,11 @@ import {
   UploadEvaluationsCommand,
 } from "@/backend/school/use-cases/commands";
 
-import {
-  SchoolQueryTypes,
-  ListEvaluationQuery,
-} from "@/backend/school/use-cases/queries";
+import { useEvaluations } from "../store/evaluations";
 
 import { onMounted } from "@vue/runtime-core";
+
+const evaluationsStore = useEvaluations();
 
 const importEvaluations = (): void => {
   const payload: ImportEvaluationsCommand = {
@@ -41,13 +40,14 @@ const importEvaluations = (): void => {
 };
 
 const listEvaluations = (): void => {
-  const payload: ListEvaluationQuery = {
-    summary: true,
-  };
-  backend.dispatchQuery({
-    type: SchoolQueryTypes.ListEvaluations,
-    payload,
-  });
+  // const payload: ListEvaluationQuery = {
+  //   summary: true,
+  // };
+  // backend.dispatchQuery({
+  //   type: SchoolQueryTypes.ListEvaluations,
+  //   payload,
+  // });
+  evaluationsStore.fetchEvaluations();
 };
 
 const uploadEvaluations = (): void => {

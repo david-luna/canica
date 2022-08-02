@@ -1,5 +1,10 @@
 import { defineStore } from "pinia";
-import { searchEvaluation } from "./actions";
+import {
+  downloadEvaluations,
+  fetchEvaluations,
+  searchEvaluation,
+  uploadEvaluations,
+} from "./actions";
 import { activeEvaluations, finishedEvaluations } from "./getters";
 import { EvaluationsState } from "./types";
 
@@ -15,6 +20,9 @@ export const useEvaluations = defineStore("evalutations", {
     finishedEvaluations,
   },
   actions: {
+    downloadEvaluations,
+    uploadEvaluations,
+    fetchEvaluations,
     searchEvaluation,
   },
 });
