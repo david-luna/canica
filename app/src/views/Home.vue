@@ -14,7 +14,10 @@ import {
 } from "@/backend/auth/use-cases/commands";
 
 import { onMounted } from "@vue/runtime-core";
+import { useRouter } from 'vue-router';
 import HelloWorld from "@/components/HelloWorld.vue"; // @ is an alias to /src
+
+const router = useRouter();
 
 const googleLogin = (): void => {
   const payload: LoginCommand = { vendor: "google" };
@@ -28,6 +31,7 @@ onMounted((): void => {
   backend.results$.subscribe((result) => {
     const event = result as { type: string; payload: unknown };
     if (event.type === AuthCommandTypes.Login) {
+      router.push({ name: "about" });
       backend.dispatchCommand({ type: "show-window", payload: null });
     }
   });
