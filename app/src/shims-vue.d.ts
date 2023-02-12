@@ -6,11 +6,15 @@ declare module '*.vue' {
 }
 
 // Helper interfaces
+interface BackendMessage {
+  type: string;
+  [key: string]: unknown;
+}
 interface SubscriptionLike {
   unsubscribe(): void;
 }
 interface ObservableLike {
-  subscribe(handler: (value: unknown) => void): SubscriptionLike;
+  subscribe(handler: (value: BackendMessage) => void): SubscriptionLike;
 }
 
 // Declare backend global var

@@ -1,11 +1,7 @@
 import { defineStore } from "pinia";
-import {
-  downloadEvaluations,
-  fetchEvaluations,
-  searchEvaluation,
-  uploadEvaluations,
-} from "./actions";
-import { activeEvaluations, finishedEvaluations } from "./getters";
+import { actions } from "./actions";
+import { subscribeEvents } from "./events";
+import { getters } from "./getters";
 import { EvaluationsState } from "./types";
 
 const initalState: EvaluationsState = {
@@ -13,16 +9,10 @@ const initalState: EvaluationsState = {
   evaluations: [],
 };
 
-export const useEvaluations = defineStore("evalutations", {
+export const useEvaluations = defineStore("evaluations", {
   state: () => initalState,
-  getters: {
-    activeEvaluations,
-    finishedEvaluations,
-  },
-  actions: {
-    downloadEvaluations,
-    uploadEvaluations,
-    fetchEvaluations,
-    searchEvaluation,
-  },
+  getters,
+  actions,
 });
+
+subscribeEvents(useEvaluations());

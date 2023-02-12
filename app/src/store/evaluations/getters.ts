@@ -5,7 +5,7 @@ const importedFilter = (ev: EvaluationSummaryDataTransfer) => {
   return ev.status === "imported";
 };
 const uploadedFilter = (ev: EvaluationSummaryDataTransfer) => {
-  return ev.status === "imported";
+  return ev.status === "uploaded";
 };
 const createSearchFilter = (search: string) => {
   return (ev: EvaluationSummaryDataTransfer) => {
@@ -26,3 +26,8 @@ export function finishedEvaluations(
   const searchFilter = createSearchFilter(state.search);
   return state.evaluations.filter(uploadedFilter).filter(searchFilter);
 }
+
+export const getters = {
+  activeEvaluations,
+  finishedEvaluations,
+};

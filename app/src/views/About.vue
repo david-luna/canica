@@ -22,8 +22,6 @@ import {
 
 import { useEvaluations } from "../store/evaluations";
 
-import { onMounted } from "@vue/runtime-core";
-
 const evaluationsStore = useEvaluations();
 
 const importEvaluations = (): void => {
@@ -40,14 +38,7 @@ const importEvaluations = (): void => {
 };
 
 const listEvaluations = (): void => {
-  // const payload: ListEvaluationQuery = {
-  //   summary: true,
-  // };
-  // backend.dispatchQuery({
-  //   type: SchoolQueryTypes.ListEvaluations,
-  //   payload,
-  // });
-  evaluationsStore.fetchEvaluations();
+  evaluationsStore.listEvaluations();
 };
 
 const uploadEvaluations = (): void => {
@@ -63,13 +54,4 @@ const uploadEvaluations = (): void => {
     payload,
   });
 };
-
-onMounted(() => {
-  backend.results$.subscribe((result) => {
-    console.log("result from backend", result);
-  });
-  backend.errors$.subscribe((error) => {
-    console.log("error from backend", error);
-  });
-});
 </script>
